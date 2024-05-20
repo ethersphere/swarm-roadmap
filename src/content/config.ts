@@ -5,7 +5,6 @@ const milestones = defineCollection({
   schema: z.object({
     title: z.string(),
     status: z.enum(["done", "in-progress", "to-do"]).optional(),
-    sortOrder: z.number().optional(),
     items: z.array(reference("items")),
   }),
 });
@@ -16,7 +15,6 @@ const items = defineCollection({
     title: z.string(),
     subtitle: z.string(),
     status: z.enum(["done", "in-progress", "to-do"]),
-    sortOrder: z.number().optional(),
   }),
 });
 

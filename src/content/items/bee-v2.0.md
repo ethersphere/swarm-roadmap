@@ -4,6 +4,7 @@ subtitle: "Bee v2.0 introduces erasure codes to fortify data integrity across th
 Erasure codes implemented on Swarm"
 status: done
 ---
-Bee v2.0 introduces erasure codes to fortify data integrity across the network, marking a critical first step in our journey.
-Erasure codes implemented on Swarm
- - Bee v2.1, consolidates core functionalities an
+
+Bee [v2.0](https://github.com/ethersphere/bee/releases/tag/v2.0.0) introduces erasure codes to fortify data integrity across the network, marking a critical first step in our journey.
+
+- Erasure codes implemented on Swarm

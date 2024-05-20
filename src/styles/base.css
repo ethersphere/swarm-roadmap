@@ -6,4 +6,16 @@
   a {
     @apply underline;
   }
+
+  .prose * + * {
+    @apply mt-4;
+  }
+
+  .prose ul {
+    @apply list-outside list-disc pl-6;
+  }
+
+  .prose li {
+    @apply mt-0;
+  }
 }

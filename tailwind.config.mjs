@@ -13,7 +13,7 @@ export default {
         display: ["Space Grotesk", ...defaultTheme.fontFamily.sans],
       },
       boxShadow: {
-        card: "0px 8px 50px 0px rgb(0 0 0 / 0.7)",
+        card: "0px 8px 50px 0px rgb(0 0 0 / 0.07)",
       },
       spacing: {
         7.5: "1.875rem",

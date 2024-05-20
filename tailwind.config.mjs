@@ -12,6 +12,9 @@ export default {
         sans: ["Inter", ...defaultTheme.fontFamily.sans],
         display: ["Space Grotesk", ...defaultTheme.fontFamily.sans],
       },
+      backgroundImage: {
+        line: "linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(45,56,67,1) 5%, rgba(45,56,67,1) 95%, rgba(255,255,255,0) 100%)",
+      },
       boxShadow: {
         card: "0px 8px 50px 0px rgb(0 0 0 / 0.07)",
       },

@@ -1,0 +1,55 @@
+---
+import { getCollection, getEntries } from 'astro:content';
+import '../styles/base.css';
+import Layout from '../layouts/Layout.astro';
+import MilestoneCard from '../components/MilestoneCard.astro';
+import Card from '../components/Card.astro';
+
+let allMilestones = await getCollection('milestones')
+
+allMilestones = await Promise.all(
+  allMilestones.map(async milestone => ({
+    ...milestone,
+    items: await getEntries(milestone.data.items)
+  }))
+);
+
+---
+
+<Layout title="Swarm Roadmap">
+	<main class="pt-12 pb-48 text-[19px] leading-[26px] text-[#F6F7F9]">
+
+		<div class="flex justify-center"><img src="/swarm.png" alt="" class="h-9" /></div>
+
+		<div class="max-w-3xl mx-auto px-5 lg:px-6 pt-28 pb-24 text-center">
+			<h1 class="text-6xl md:text-[88px] font-bold leading-[97px] tracking-tight">Roadmap</h1>
+			<div class="mt-8">
+				<p><strong>Embarking on the Journey to Swarm 3.0: A Year of Groundbreaking Developments</strong></p>
+				<br />
+				<p>As we venture through 2024, each release under the Swarm initiative brings us closer to the realization of Swarm 3.0, an epoch where decentralized data storage transforms into a ubiquitous utility, seamlessly integrated into our daily lives.</p>
+			</div>
+
+				<img class="h-[437px] w-auto mx-auto mt-24" src="/background.png" alt="" />
+		</div>
+
+		<div class="max-w-3xl mx-auto px-5 lg:px-6 flex flex-col gap-16">
+			{allMilestones.map(milestone => (
+    <MilestoneCard title={milestone.data.title} status={milestone.data.status} items={milestone.items} slug={milestone.slug} />
+  ))}
+		</div>
+
+		<div class="max-w-3xl mx-auto px-5 lg:px-6 text-center flex flex-col gap-6 mt-24 mb-64">
+			<p>Each step at the roadmap we take is a bold stride towards transforming Swarm into the world's computer, where decentralized storage is not just a tool, but a transformational force for business, innovation, and everyday life. Emphasizing a fair data economy, we are committed to ensuring that data ownership and profit are equitably distributed among all participants. Join us on this journey to redefine the digital landscape and establish a new paradigm of fairness and accessibility in data management.</p>
+			<p>The dates and milestones outlined in this roadmap are subject to change.</p>
+		</div>
+
+		<div class="max-w-6xl mx-auto px-5 lg:px-6">
+			<h2 class="font-bold text-[48px] leading-[1.2] tracking-tight text-center">Vision</h2>
+
+			<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 mt-16">
+				<Card title="End Users" content="End users have a smooth experience starting a node and have the tools to monitor and interact with their local node. Apps connect to nodes and gateways in a secure way. Basic functionality of websites (files and directories) upload and download is optimised for speed and reliability." />
+			</div>
+		</div>
+	</main>
+
+</Layout>

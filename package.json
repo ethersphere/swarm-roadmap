@@ -1,0 +1,24 @@
+{
+  "name": "ethswarm-roadmap-astro",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro check && astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/alpinejs": "^0.4.0",
+    "@astrojs/check": "^0.7.0",
+    "@astrojs/tailwind": "^5.0.3",
+    "@floating-ui/react": "^0.26.4",
+    "@tailwindcss/container-queries": "^0.1.1",
+    "astro": "^4.0.6",
+    "astro-relative-links": "^0.3.5",
+    "chart.js": "^4.4.1",
+    "tailwindcss": "^3.3.6",
+    "typescript": "^5.3.3"
+  }
+}

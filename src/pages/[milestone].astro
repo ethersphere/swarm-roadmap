@@ -20,12 +20,12 @@ let items = await Promise.all((await getEntries(entry.data.items)).map(async (it
 
 ---
 <Layout title="Swarm Roadmap">
-  <main class="pt-12 pb-48 text-[19px] leading-[26px] text-[#F6F7F9]">
+  <main class="pt-12 pb-24 md:pb-48 text-[19px] leading-[26px] text-[#F6F7F9]">
 
 		<div class="flex justify-center"><a href="https://www.ethswarm.org/"><img src="/swarm.png" alt="" class="h-9" /></a></div>
 
-		<div class="max-w-xl mx-auto px-5 lg:px-6 pt-28 pb-24 text-center">
-			<h1 class="text-3xl md:text-[48px] font-bold md:leading-[1.2] tracking-tight">{entry.data.title}</h1>
+		<div class="max-w-xl mx-auto px-5 lg:px-6 pt-20 pb-12 md:pt-28 md:pb-24 text-center">
+			<h1 class="text-3xl md:text-[48px] font-bold md:leading-[1.2] tracking-tight text-balance">{entry.data.title}</h1>
 		</div>
 
     <div class="max-w-2xl mx-auto px-5 lg:px-6 ">
@@ -41,16 +41,20 @@ let items = await Promise.all((await getEntries(entry.data.items)).map(async (it
               <div class="size-6 shrink-0 mt-9 relative">
 
                 {item.data.status === 'done' && (
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><g clip-path="url(#a)"><path fill="#1F2831" fill-opacity=".7" stroke="#D6D9DF" stroke-linecap="square" stroke-miterlimit="10" stroke-width="2" d="M12 23c6.075 0 11-4.925 11-11S18.075 1 12 1 1 5.925 1 12s4.925 11 11 11Z"/><path fill="#1F2831" fill-opacity=".7" d="m6 12 4 4 8-8"/><path stroke="#D6D9DF" stroke-linecap="square" stroke-miterlimit="10" stroke-width="2" d="m6 12 4 4 8-8"/></g><defs><clipPath id="a"><path fill="#fff" d="M0 0h24v24H0z"/></clipPath></defs></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><g clip-path="url(#a)"><path fill="#1b2128" stroke="#d7d9df" stroke-linecap="square" stroke-miterlimit="10" stroke-width="2" d="M12 23c6.075 0 11-4.925 11-11S18.075 1 12 1 1 5.925 1 12s4.925 11 11 11Z"/><path fill="#1b2128" d="m6 12 4 4 8-8"/><path stroke="#d7d9df" stroke-linecap="square" stroke-miterlimit="10" stroke-width="2" d="m6 12 4 4 8-8"/></g><defs><clipPath id="a"><path fill="#fff" d="M0 0h24v24H0z"/></clipPath></defs></svg>
                 )}
 
-                {item.data.status === 'in-progress' && (
+                {/* {item.data.status === 'in-progress' && (
                <svg class="animate-spin bg-[#1F2831B2] rounded-full" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><g clip-path="url(#a)"><path opacity=".4" d="M8 16A8 8 0 1 1 8 0a8 8 0 0 1 0 16ZM8 2a6 6 0 1 0 0 12A6 6 0 0 0 8 2Z" fill="#2D3843"></path><path d="M16 8h-2a6 6 0 0 0-6-6V0a8 8 0 0 1 8 8Z" fill="#D6D9DF"></path><path d="m9.98 15.73-.5-1.93a6 6 0 0 0 4.33-7.3l1.94-.5a8 8 0 0 1-5.77 9.73Z" fill="#D6D9DF"></path></g><defs><clipPath id="a"><path fill="#fff" d="M0 0h16v16H0z"></path></clipPath></defs></svg>
 
+                )} */}
+
+                {item.data.status === 'in-progress' && (
+                  <svg class="animate-spin-1500ms" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><g clip-path="url(#a)"><path fill="#1b2128" stroke="#2f3842" stroke-linecap="square" stroke-miterlimit="10" stroke-width="2" d="M12 23c6.075 0 11-4.925 11-11S18.075 1 12 1 1 5.925 1 12s4.925 11 11 11Z"/><path fill="#d7d9df" d="M24 12h-2A10.011 10.011 0 0 0 12 2V0a12.013 12.013 0 0 1 12 12Z"/></g><defs><clipPath id="a"><path fill="#fff" d="M0 0h24v24H0z"/></clipPath></defs></svg>
                 )}
 
                 {item.data.status === 'to-do' && (
-               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><path fill="#1F2831" fill-opacity=".7" stroke="#2D3843" stroke-linecap="square" stroke-miterlimit="10" stroke-width="2" d="M12 23c6.075 0 11-4.925 11-11S18.075 1 12 1 1 5.925 1 12s4.925 11 11 11Z"/></svg>
+               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><path fill="#1b2128" stroke="#2f3842" stroke-linecap="square" stroke-miterlimit="10" stroke-width="2" d="M12 23c6.075 0 11-4.925 11-11S18.075 1 12 1 1 5.925 1 12s4.925 11 11 11Z"/></svg>
                 )}
 
               </div>
@@ -65,21 +69,17 @@ let items = await Promise.all((await getEntries(entry.data.items)).map(async (it
         })}
       </div>
 
-      <div class="text-center mt-24">
+      <div class="text-center mt-16 md:mt-24">
         <h3 class="font-bold mb-2">Missing features?</h3>
         <div>
-          Suggest on <a href="#" class="bg-[#2B2B2B] font-semibold text-sm py-2 px-4 rounded-full no-underline">Discord</a> or propose a <a href="#" class="bg-[#2B2B2B] font-semibold text-sm py-2 px-4 rounded-full no-underline">SWIP</a>
+          Suggest on <a href="https://discord.ethswarm.org/" class="bg-[#2B2B2B] font-semibold text-sm py-2 px-4 rounded-full no-underline leading-[48px]">Discord</a> or <br class="md:hidden" />propose a <a href="#" class="bg-[#2B2B2B] font-semibold text-sm py-2 px-4 rounded-full no-underline">SWIP</a>
         </div>
 
-        <div class="mt-24 opacity-80">
+        <div class="mt-16 md:mt-24 opacity-80 text-sm md:text-[19px] md:leading-[26px] text-balance">
           <h4 class="font-bold">Disclaimer:</h4>
-          <div>Eiusmod magna officia sit veniam dolore laborum dolore enim. Eiusmod anim in aute irure nostrud excepteur amet elit pariatur occaecat. </div>
+          <div>The dates and milestones outlined in this roadmap are subject to change.</div>
         </div>
       </div>
     </div>
     </main>
-  <!-- <pre>{JSON.stringify(entry, null, 2)}</pre> -->
 </Layout>
-<!-- <h1>{entry.data.title}</h1> -->
-
-<!-- <Content /> -->

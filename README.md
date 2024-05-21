@@ -1,28 +1,12 @@
 # Swarm Roadmap - Astro
 
-## 🚀 Project Structure
+## 🚀 Editing Content
 
-Inside of your Astro project, you'll see the following folders and files:
+Most of the content is placed in the `src/content/` directory. Each file is a markdown file with a frontmatter section at the top. The frontmatter section is used to define metadata about the content, like the title, subtitle, and status.
 
-```text
-/
-├── public/
-│   └── favicon.svg
-├── src/
-│   ├── components/
-│   │   └── Card.astro
-│   ├── layouts/
-│   │   └── Layout.astro
-│   └── pages/
-│       └── index.astro
-└── package.json
-```
+The status can be omitted, but it's used to define the status of the content. The status can be `done`, `in-progress`, or `to-do`.
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
-
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
-
-Any static assets, like images, can be placed in the `public/` directory.
+The `items` field in the milestones is used to define the items that are part of the milestone. The items are defined by their filename without the `.md` extension. The `subtitle` field is used to define the list on the homepage.
 
 ## 🧞 Commands
 
@@ -36,7 +20,3 @@ All commands are run from the root of the project, from a terminal:
 | `npm run preview`         | Preview your build locally, before deploying     |
 | `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
 | `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).

@@ -18,4 +18,8 @@
   .prose li {
     @apply mt-0;
   }
+
+  .animate-spin-1500ms {
+    animation: spin 1.5s linear infinite;
+  }
 }

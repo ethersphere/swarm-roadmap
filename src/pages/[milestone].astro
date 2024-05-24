@@ -1,47 +1,100 @@
 ---
-import '../styles/base.css';
-import Layout from '../layouts/Layout.astro';
+import "../styles/base.css";
+import Layout from "../layouts/Layout.astro";
 
-import { getCollection, getEntries } from 'astro:content';
+import { getCollection, getEntries } from "astro:content";
 
 export async function getStaticPaths() {
-  const milestones = await getCollection('milestones');
-  return milestones.map(entry => ({
-    params: { milestone: entry.slug }, props: { entry },
+  const milestones = await getCollection("milestones");
+  return milestones.map((entry) => ({
+    params: { milestone: entry.slug },
+    props: { entry },
   }));
 }
 
 const { entry } = Astro.props;
 
-let items = await Promise.all((await getEntries(entry.data.items)).map(async (item) => ({
-  ...item,
-  Content: await item.render(),
-})));
-
+let items = await Promise.all(
+  (await getEntries(entry.data.items)).map(async (item) => ({
+    ...item,
+    Content: await item.render(),
+  })),
+);
 ---
+
 <Layout title="Swarm Roadmap">
-  <main class="pt-12 pb-24 md:pb-48 text-[19px] leading-[26px] text-[#F6F7F9]">
+  <main class="pt-12 text-[19px] leading-[26px] text-[#F6F7F9]">
+    <div class="flex justify-center">
+      <a href="https://www.ethswarm.org/"
+        ><img src="/swarm.png" alt="" class="h-9" /></a
+      >
+    </div>
 
-		<div class="flex justify-center"><a href="https://www.ethswarm.org/"><img src="/swarm.png" alt="" class="h-9" /></a></div>
+    <div
+      class="grid grid-cols-12 gap-5 max-w-6xl mx-auto px-5 lg:px-8 pt-20 pb-12 md:pt-28 md:pb-24"
+    >
+      <div class="col-span-12 sm:col-span-6">
+        <h1 class="text-[#F6F7F9] font-bold">
+          <div class="text-3xl lg:text-5xl mb-3">
+            Milestone {entry.data.index}
+          </div>
+          <div class="text-2xl lg:text-[32px] leading-tight">
+            {entry.data.title}
+          </div>
+        </h1>
 
-		<div class="max-w-xl mx-auto px-5 lg:px-6 pt-20 pb-12 md:pt-28 md:pb-24 text-center">
-			<h1 class="text-3xl md:text-[48px] font-bold md:leading-[1.2] tracking-tight text-balance">{entry.data.title}</h1>
-		</div>
-
-    <div class="max-w-2xl mx-auto px-5 lg:px-6 ">
-      <div class="flex flex-col gap-12 relative">
-        <div class="absolute top-0 bottom-0 h-full w-6 flex justify-center">
-          <div class="w-0.5 bg-line h-full"></div>
+        <div class="mt-12">
+          <a
+            href="/"
+            class="no-underline transition duration-200 inline-flex justify-center rounded-full items-center text-sm font-semibold leading-[2.3] whitespace-nowrap bg-[#FF6B26] focus:outline-none text-[#F6F7F9] hover:bg-opacity-80 px-4"
+            >&lt;- All milestones</a
+          >
         </div>
-<!-- loop items -->
-        {items.map(async (item) => {
-          const { Content } = await item.render();
-          return(
-            <div class="flex gap-5 md:gap-11">
-              <div class="size-6 shrink-0 mt-9 relative">
+      </div>
+    </div>
 
-                {item.data.status === 'done' && (
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><g clip-path="url(#a)"><path fill="#1b2128" stroke="#d7d9df" stroke-linecap="square" stroke-miterlimit="10" stroke-width="2" d="M12 23c6.075 0 11-4.925 11-11S18.075 1 12 1 1 5.925 1 12s4.925 11 11 11Z"/><path fill="#1b2128" d="m6 12 4 4 8-8"/><path stroke="#d7d9df" stroke-linecap="square" stroke-miterlimit="10" stroke-width="2" d="m6 12 4 4 8-8"/></g><defs><clipPath id="a"><path fill="#fff" d="M0 0h24v24H0z"/></clipPath></defs></svg>
+    <div
+      class="relative max-w-6xl mx-auto px-5 lg:px-8 flex flex-col gap-16 sm:gap-24 py-6"
+    >
+      <div class="absolute top-0 bottom-0 h-full w-6 flex justify-center">
+        <div class="w-0.5 bg-line h-full"></div>
+      </div>
+      {
+        items.map(async (item) => {
+          const { Content } = await item.render();
+          return (
+            <div class="grid grid-cols-12 gap-2 sm:gap-5">
+              <div class="size-6 shrink-0 mt-1 lg:mt-2 relative">
+                {item.data.status === "done" && (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <g clip-path="url(#a)">
+                      <path
+                        fill="#1b2128"
+                        stroke="#d7d9df"
+                        stroke-linecap="square"
+                        stroke-miterlimit="10"
+                        stroke-width="2"
+                        d="M12 23c6.075 0 11-4.925 11-11S18.075 1 12 1 1 5.925 1 12s4.925 11 11 11Z"
+                      />
+                      <path fill="#1b2128" d="m6 12 4 4 8-8" />
+                      <path
+                        stroke="#d7d9df"
+                        stroke-linecap="square"
+                        stroke-miterlimit="10"
+                        stroke-width="2"
+                        d="m6 12 4 4 8-8"
+                      />
+                    </g>
+                    <defs>
+                      <clipPath id="a">
+                        <path fill="#fff" d="M0 0h24v24H0z" />
+                      </clipPath>
+                    </defs>
+                  </svg>
                 )}
 
                 {/* {item.data.status === 'in-progress' && (
@@ -49,37 +102,93 @@ let items = await Promise.all((await getEntries(entry.data.items)).map(async (it
 
                 )} */}
 
-                {item.data.status === 'in-progress' && (
-                  <svg class="animate-spin-1500ms" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><g clip-path="url(#a)"><path fill="#1b2128" stroke="#2f3842" stroke-linecap="square" stroke-miterlimit="10" stroke-width="2" d="M12 23c6.075 0 11-4.925 11-11S18.075 1 12 1 1 5.925 1 12s4.925 11 11 11Z"/><path fill="#d7d9df" d="M24 12h-2A10.011 10.011 0 0 0 12 2V0a12.013 12.013 0 0 1 12 12Z"/></g><defs><clipPath id="a"><path fill="#fff" d="M0 0h24v24H0z"/></clipPath></defs></svg>
+                {item.data.status === "in-progress" && (
+                  <svg
+                    class="animate-spin-1500ms"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <g clip-path="url(#a)">
+                      <path
+                        fill="#1b2128"
+                        stroke="#2f3842"
+                        stroke-linecap="square"
+                        stroke-miterlimit="10"
+                        stroke-width="2"
+                        d="M12 23c6.075 0 11-4.925 11-11S18.075 1 12 1 1 5.925 1 12s4.925 11 11 11Z"
+                      />
+                      <path
+                        fill="#d7d9df"
+                        d="M24 12h-2A10.011 10.011 0 0 0 12 2V0a12.013 12.013 0 0 1 12 12Z"
+                      />
+                    </g>
+                    <defs>
+                      <clipPath id="a">
+                        <path fill="#fff" d="M0 0h24v24H0z" />
+                      </clipPath>
+                    </defs>
+                  </svg>
                 )}
 
-                {item.data.status === 'to-do' && (
-               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><path fill="#1b2128" stroke="#2f3842" stroke-linecap="square" stroke-miterlimit="10" stroke-width="2" d="M12 23c6.075 0 11-4.925 11-11S18.075 1 12 1 1 5.925 1 12s4.925 11 11 11Z"/></svg>
+                {item.data.status === "to-do" && (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      fill="#1b2128"
+                      stroke="#2f3842"
+                      stroke-linecap="square"
+                      stroke-miterlimit="10"
+                      stroke-width="2"
+                      d="M12 23c6.075 0 11-4.925 11-11S18.075 1 12 1 1 5.925 1 12s4.925 11 11 11Z"
+                    />
+                  </svg>
                 )}
-
               </div>
-          <div class="py-8 px-5 flex flex-col gap-4 rounded-xl bg-[#1F2831B2] border border-[#2D3843] shadow-card text-sm text-[#F6F7F9CC] leading-5 w-full">
-            <h2 class="font-bold text-2xl leading-[1.2] mb-4">{item.data.title}</h2>
-            <div class="prose">
-            <Content />
-            </div>
-          </div>
-            </div>
-        );
-        })}
-      </div>
 
-      <div class="text-center mt-16 md:mt-24">
+              <div class="col-span-10 col-start-3 sm:col-span-4 text-[#F6F7F9] text-2xl lg:text-[32px] leading-tight font-bold">
+                <h3>{item.data.title}</h3>
+              </div>
+
+              <div class="col-span-10 sm:col-span-6 col-start-3 sm:col-start-7 prose text-[17px] leading-6 text-[#F6F7F9CC]">
+                <Content />
+              </div>
+            </div>
+          );
+        })
+      }
+    </div>
+
+    <div
+      class="max-w-6xl mx-auto px-5 lg:px-8 grid grid-cols-12 gap-5 my-24 md:my-48 border border-transparent"
+    >
+      <div class="col-span-12 md:col-span-6">
         <h3 class="font-bold mb-2">Missing features?</h3>
         <div>
-          Suggest on <a href="https://discord.ethswarm.org/" class="bg-[#2B2B2B] font-semibold text-sm py-2 px-4 rounded-full no-underline leading-[48px]">Discord</a> or <br class="md:hidden" />propose a <a href="#" class="bg-[#2B2B2B] font-semibold text-sm py-2 px-4 rounded-full no-underline">SWIP</a>
+          Suggest on <a
+            href="https://discord.ethswarm.org/"
+            class="bg-[#2B2B2B] font-semibold text-sm py-2 px-4 rounded-full no-underline leading-[48px]"
+            >Discord</a
+          > or <br class="sm:hidden" />propose a <a
+            href="#"
+            class="bg-[#2B2B2B] font-semibold text-sm py-2 px-4 rounded-full no-underline"
+            >SWIP</a
+          >
         </div>
+      </div>
 
-        <div class="mt-16 md:mt-24 opacity-80 text-sm md:text-[19px] md:leading-[26px] text-balance">
-          <h4 class="font-bold">Disclaimer:</h4>
-          <div>The dates and milestones outlined in this roadmap are subject to change.</div>
+      <div
+        class="col-span-12 md:col-span-6 opacity-80 text-sm md:text-[19px] md:leading-[26px]"
+      >
+        <h4 class="font-bold">Disclaimer:</h4>
+        <div>
+          The dates and milestones outlined in this roadmap are subject to
+          change.
         </div>
       </div>
     </div>
-    </main>
+  </main>
 </Layout>

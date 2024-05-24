@@ -3,8 +3,10 @@ import { z, reference, defineCollection } from "astro:content";
 const milestones = defineCollection({
   type: "content",
   schema: z.object({
+    percentage: z.number().optional(),
+    index: z.number(),
+    order: z.number().optional(),
     title: z.string(),
-    status: z.enum(["done", "in-progress", "to-do"]).optional(),
     items: z.array(reference("items")),
   }),
 });

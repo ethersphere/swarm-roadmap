@@ -1,64 +1,170 @@
 ---
-import { getCollection, getEntries } from 'astro:content';
-import '../styles/base.css';
-import Layout from '../layouts/Layout.astro';
-import MilestoneCard from '../components/MilestoneCard.astro';
-import Card from '../components/Card.astro';
+import { getCollection, getEntries } from "astro:content";
+import "../styles/base.css";
+import Layout from "../layouts/Layout.astro";
+import MilestoneCard from "../components/MilestoneCard.astro";
+import Card from "../components/Card.astro";
 
-let allMilestones = await getCollection('milestones')
+let allMilestones = await getCollection("milestones");
 
 allMilestones = await Promise.all(
-  allMilestones.map(async milestone => ({
+  allMilestones.map(async (milestone) => ({
     ...milestone,
-    items: await getEntries(milestone.data.items)
-  }))
+    items: await getEntries(milestone.data.items),
+  })),
 );
-
 ---
 
 <Layout title="Swarm Roadmap">
-	<main class="pt-12 pb-24 md:pb-48 text-[19px] leading-[26px] text-[#F6F7F9]">
+  <main class="pt-12 pb-24 md:pb-48 text-[19px] leading-[26px] text-[#F6F7F9]">
+    <div class="flex justify-center">
+      <a href="https://www.ethswarm.org/"
+        ><img src="/swarm.png" alt="" class="h-9" /></a
+      >
+    </div>
 
-		<div class="flex justify-center"><a href="https://www.ethswarm.org/"><img src="/swarm.png" alt="" class="h-9" /></a></div>
+    <div
+      class="max-w-6xl mx-auto px-5 lg:px-8 pb-16 lg:pb-24 grid grid-cols-1 md:grid-cols-2 md:gap-5 border border-transparent pt-8 lg:pt-0"
+    >
+      <div class="flex flex-col justify-center">
+        <h1
+          class="text-6xl md:text-[88px] font-bold leading-[97px] tracking-tight"
+        >
+          Roadmap
+        </h1>
 
-		<div class="max-w-6xl mx-auto px-5 lg:px-6 pt-28 pb-24 text-center">
-			<h1 class="text-6xl md:text-[88px] font-bold leading-[97px] tracking-tight">Roadmap</h1>
-			<div class="mt-8 text-balance">
-				<p><strong>Embarking on the Journey to Swarm 3.0: A Year of Groundbreaking Developments</strong></p>
-				<br />
-				<p>As we venture through 2024, each release under the Swarm initiative brings us closer to the realization of Swarm 3.0, an epoch where decentralized data storage transforms into a ubiquitous utility, seamlessly integrated into our daily lives.</p>
-				<br />
-				<p>This journey is not just a series of software updates; it’s a revolution in how we access and manage data. Swarm 3.0 envisions a world where data privacy, security, and accessibility are inherent rights. With every milestone, we lay the groundwork for a future where decentralised storage and services empower individuals and businesses, fostering innovation and creating new economic opportunities. The transition to Swarm 3.0 is about building a resilient and scalable infrastructure that supports the digital demands of tomorrow, ensuring data is stored, accessed, and utilised in a fair and equitable manner. This roadmap outlines the steps we are taking this year to make this vision a reality, highlighting the technological advancements and strategic initiatives that will drive us forward.</p>
-			</div>
+        <div class="mt-6 md:mr-20 max-w-md">
+          <p>
+            <strong
+              >Embarking on the Journey to Swarm 3.0: A Year of Groundbreaking
+              Developments</strong
+            >
+          </p>
+          <br />
+          <p>
+            As we venture through 2024, each release under the Swarm initiative
+            brings us closer to the realization of Swarm 3.0, an epoch where
+            decentralized data storage transforms into a ubiquitous utility,
+            seamlessly integrated into our daily lives.
+          </p>
+        </div>
+      </div>
 
-				<img class="h-[437px] w-auto mx-auto mt-24" src="/background.png" alt="" />
-		</div>
+      <div class="mt-12 md:mt-0 lg:py-14 lg:pl-20 mx-auto">
+        <img
+          class="h-[368px] lg:h-[603px] w-auto object-contain"
+          src="/background.png"
+          alt=""
+        />
+      </div>
+    </div>
 
-		<div class="max-w-3xl mx-auto px-5 lg:px-6 flex flex-col gap-16">
-			{allMilestones.map(milestone => (
-				// @ts-ignore
-    <MilestoneCard title={milestone.data.title} status={milestone.data.status} items={milestone.items} slug={milestone.slug} />
-  ))}
-		</div>
+    <div
+      class="max-w-6xl mx-auto px-5 lg:px-8 pt-16 md:pt-24 pb-20 md:pb-36 grid grid-cols-1 lg:grid-cols-2 gap-10 border border-transparent"
+    >
+      <div class="max-w-2xl">
+        <p>
+          This journey is not just a series of software updates; it’s a
+          revolution in how we access and manage data. <strong
+            >Swarm 3.0 envisions a world where data privacy, security, and
+            accessibility are inherent rights.</strong
+          > With every milestone, we lay the groundwork for a future where decentralised
+          storage and services empower individuals and businesses, fostering innovation
+          and creating new economic opportunities.
+        </p>
+      </div>
 
-		<div class="max-w-3xl mx-auto px-5 lg:px-6 text-center flex flex-col gap-6 mt-24 mb-24 md:mb-64">
-			<p>Each step at the roadmap we take is a bold stride towards transforming Swarm into the world's computer, where decentralized storage is not just a tool, but a transformational force for business, innovation, and everyday life. Emphasizing a fair data economy, we are committed to ensuring that data ownership and profit are equitably distributed among all participants. Join us on this journey to redefine the digital landscape and establish a new paradigm of fairness and accessibility in data management.</p>
-			<p>The dates and milestones outlined in this roadmap are subject to change.</p>
-		</div>
+      <div class="max-w-2xl">
+        <p>
+          The transition to Swarm 3.0 is about building a resilient and scalable
+          infrastructure that supports the digital demands of tomorrow, ensuring
+          data is stored, accessed, and utilised in a fair and equitable manner. <strong
+            >This roadmap outlines the steps we are taking this year to make
+            this vision a reality, highlighting the technological advancements
+            and strategic initiatives that will drive us forward.</strong
+          >
+        </p>
+      </div>
+    </div>
 
-		<div class="max-w-6xl mx-auto px-5 lg:px-6">
-			<h2 class="font-bold text-[48px] leading-[1.2] tracking-tight text-center">Vision</h2>
+    <div
+      class="max-w-7xl mx-auto px-5 lg:px-10 flex flex-col gap-12 lg:gap-20 xl:gap-24"
+    >
+      {
+        allMilestones.map((milestone) => (
+          // @ts-ignore
+          <MilestoneCard
+            title={milestone.data.title}
+            status={milestone.data.status}
+            items={milestone.items}
+            slug={milestone.slug}
+            percentage={milestone.data.percentage}
+            index={milestone.data.index}
+          />
+        ))
+      }
+    </div>
 
-			<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 mt-16">
-				<Card title="End Users" content="End users have a smooth experience starting a node and have the tools to monitor and interact with their local node. Apps connect to nodes and gateways in a secure way. Basic functionality of websites (files and directories) upload and download is optimised for speed and reliability." />
-				<Card title="Dapp Developers" content="Dapp Developers are provided with a mature toolkit that can be used to integrate Swarm in their Web3 dapp. This includes extensive and useful documentation, example dapps, and tutorials. They benefit from dashboards monitoring vital metrics displaying the node's operational health. Developers can rely on help provided in dev channels." />
-				<Card title="Operators" content="Node operators are sufficiently incentivised to contribute their bandwidth and storage space. Time-based allowance is calibrated so that clients paying for bandwidth will get reasonable service. As for storage, Postage Stamp revenue is redistributed to storer nodes directly in an efficient way without the need for storage contributors to stake their tokens." />
-				<Card title="Collaborators" content="Alternative client development is supported by consolidated and structured specifications of the DISC protocols and client strategies. High level standards and APIs are cleared up and documented. Integration, multiclient testing environment and quality assurance tools are provided. Ecosystem projects are provided with grants and fellowships." />
-				<Card title="Community" content="The Swarm Foundation aims to assist as much as it can in providing scaffoldings to the community to support their own agenda involving Swarm. It encourages autonomous, independent and permissionless communities to take further ownership over the protocol and its usages." />
-				<Card title="Commons" content="The Foundation subsidises efforts to make large datasets of public interest available through Swarm." />
+    <div
+      class="max-w-6xl mx-auto px-5 lg:px-8 pt-16 md:pt-24 pb-24 md:pb-36 grid grid-cols-1 lg:grid-cols-2 gap-10 border border-transparent"
+    >
+      <div>
+        <p>
+          <strong
+            >Each step at the roadmap we take is a bold stride towards
+            transforming Swarm into the world's computer, where decentralized
+            storage is not just a tool, but a transformational force for
+            business, innovation, and everyday life.</strong
+          > Emphasizing a fair data economy, we are committed to ensuring that data
+          ownership and profit are equitably distributed among all participants.
+          Join us on this journey to redefine the digital landscape and establish
+          a new paradigm of fairness and accessibility in data management.
+        </p>
+      </div>
 
-			</div>
-		</div>
-	</main>
+      <div>
+        <p>
+          The dates and milestones outlined in this roadmap are subject to
+          change.
+        </p>
+      </div>
+    </div>
 
+    <div class="max-w-6xl mx-auto px-5 lg:px-8 border border-transparent">
+      <h2
+        class="font-bold text-[48px] leading-[1.2] tracking-tight text-center"
+      >
+        Vision
+      </h2>
+
+      <div
+        class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 mt-10 md:mt-16"
+      >
+        <Card
+          title="End Users"
+          content="End users have a smooth experience starting a node and have the tools to monitor and interact with their local node. Apps connect to nodes and gateways in a secure way. Basic functionality of websites (files and directories) upload and download is optimised for speed and reliability."
+        />
+        <Card
+          title="Dapp Developers"
+          content="Dapp Developers are provided with a mature toolkit that can be used to integrate Swarm in their Web3 dapp. This includes extensive and useful documentation, example dapps, and tutorials. They benefit from dashboards monitoring vital metrics displaying the node's operational health. Developers can rely on help provided in dev channels."
+        />
+        <Card
+          title="Operators"
+          content="Node operators are sufficiently incentivised to contribute their bandwidth and storage space. Time-based allowance is calibrated so that clients paying for bandwidth will get reasonable service. As for storage, Postage Stamp revenue is redistributed to storer nodes directly in an efficient way without the need for storage contributors to stake their tokens."
+        />
+        <Card
+          title="Collaborators"
+          content="Alternative client development is supported by consolidated and structured specifications of the DISC protocols and client strategies. High level standards and APIs are cleared up and documented. Integration, multiclient testing environment and quality assurance tools are provided. Ecosystem projects are provided with grants and fellowships."
+        />
+        <Card
+          title="Community"
+          content="The Swarm Foundation aims to assist as much as it can in providing scaffoldings to the community to support their own agenda involving Swarm. It encourages autonomous, independent and permissionless communities to take further ownership over the protocol and its usages."
+        />
+        <Card
+          title="Commons"
+          content="The Foundation subsidises efforts to make large datasets of public interest available through Swarm."
+        />
+      </div>
+    </div>
+  </main>
 </Layout>

@@ -1,5 +1,7 @@
 ---
-title: "Milestone 2: Expanding Horizons"
+index: 2
+title: "Expanding Horizons"
+order: 2
 items:
   - bee-v24
   - bee-v25

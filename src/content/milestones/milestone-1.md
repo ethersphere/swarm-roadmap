@@ -1,5 +1,8 @@
 ---
-title: "Milestone 1: Laying the Foundations for Growth"
+index: 1
+title: "Laying the Foundations for Growth"
+order: 1
+percentage: 10
 items:
   - bee-v20
   - bee-v21

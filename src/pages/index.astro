@@ -7,6 +7,7 @@ import Card from "../components/Card.astro";
 
 let allMilestones = await getCollection("milestones");
 
+// set the type to be milestone + items
 allMilestones = await Promise.all(
   allMilestones.map(async (milestone) => ({
     ...milestone,
@@ -95,7 +96,6 @@ allMilestones = await Promise.all(
           // @ts-ignore
           <MilestoneCard
             title={milestone.data.title}
-            status={milestone.data.status}
             items={milestone.items}
             slug={milestone.slug}
             percentage={milestone.data.percentage}

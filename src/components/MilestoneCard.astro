@@ -7,7 +7,7 @@ interface Props {
     };
   }[];
   slug: string;
-  percentage: number;
+  percentage: number | undefined;
   index: number;
 }
 
@@ -26,7 +26,7 @@ const { title, items, slug, percentage, index } = Astro.props;
     </h3>
 
     {
-      percentage && (
+      percentage !== undefined && (
         <div class="mt-8 text-[#F6F7F9]">
           <div class="flex justify-between text-sm">
             <div class="font-bold">Completed</div>

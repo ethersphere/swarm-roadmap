@@ -2,7 +2,7 @@
 index: 1
 title: "Laying the Foundations for Growth"
 order: 1
-percentage: 88
+percentage: 50
 items:
   - bee-v20
   - bee-v21

@@ -5,6 +5,6 @@ Erasure codes implemented on Swarm"
 status: done
 ---
 
-Bee [v2.0](https://github.com/ethersphere/bee/releases/tag/v2.0.0) introduces erasure codes to fortify data integrity across the network, marking a critical first step in our journey.
+[Bee v2.0](https://github.com/ethersphere/bee/releases/tag/v2.0.0) introduces erasure codes to fortify data integrity across the network, marking a critical first step in our journey.
 
 - Erasure codes implemented on Swarm

@@ -1,7 +1,7 @@
 ---
 title: "Bee v2.2"
 subtitle: "Bee v2.2 brings fine-grained, enterprise-level control over data and economic improvements, streamlining data management and enhancing incentives for node operators."
-status: to-do
+status: done
 ---
 
 Bee v2.2 brings fine-grained, enterprise-level control over data and economic improvements, streamlining data management and enhancing incentives for node operators.

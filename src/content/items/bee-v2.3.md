@@ -1,7 +1,7 @@
 ---
 title: "Bee v2.3"
 subtitle: "Bee v2.3 enacts upgraded reward mechanisms and advanced pricing models, promoting readiness for rapid growth and sustaining community trust."
-status: to-do
+status: done
 ---
 
 Bee v2.3 enacts upgraded reward mechanisms and advanced pricing models, promoting readiness for rapid growth and sustaining community trust.

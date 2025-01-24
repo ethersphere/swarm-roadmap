@@ -1,7 +1,7 @@
 ---
 title: "Bee v2.4"
 subtitle: "Bee v2.4 strengthens the network's backbone, making it stronger and more scalable."
-status: to-do
+status: done
 ---
 
 Bee v2.4 strengthens the network's backbone, making it stronger and more scalable.

@@ -1,9 +1,10 @@
 ---
 title: "Bee v2.5"
-subtitle: "Bee v2.5 enhances blockchain adaptability, paving the way for Swarm to operate across diverse environments and preparing operators for Bee storage growth."
-status: to-do
+subtitle: "Bee v2.5 enhances blockchain adaptability, introducing multichain support and improving upload/download performance to boost Swarm’s efficiency and versatility."
+status: in-progress
 ---
 
-Bee v2.5 enhances blockchain adaptability, paving the way for Swarm to operate across diverse environments and preparing operators for Bee storage growth.
+Bee v2.5 enhances blockchain adaptability, introducing multichain support and improving upload/download performance to boost Swarm’s efficiency and versatility.
 
-- Flex the Bee - Reserve size doubling SWIP published
+- Multichain support
+- Upload/Download improvements

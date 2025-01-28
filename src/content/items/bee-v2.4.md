@@ -1,11 +1,7 @@
 ---
 title: "Bee v2.4"
-subtitle: "Bee v2.4 strengthens the network's backbone, making it stronger and more scalable."
+subtitle: "Bee v2.4 pays tribute to ldeffenb, introducing the new node startup message: “Share the knowledge.”"
 status: done
 ---
 
-Bee v2.4 strengthens the network's backbone, making it stronger and more scalable.
-
-- Additional safeguards for network stability
-- Upgraded testing & release process
-- **SWIP47:** Improved pull-sync protocol - circular neighbourhood strategy
+Bee v2.4 pays tribute to ldeffenb, introducing the new node startup message: “Share the knowledge.”

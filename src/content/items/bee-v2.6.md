@@ -4,6 +4,6 @@ subtitle: "Bee v2.6 brings performance improvements and protocol changes, enhanc
 status: to-do
 ---
 
-Bee v2.6 brings performance improvements and protocol changes, enhancing the efficiency and robustness of the Swarm network.
+Bee v2.6 brings performance improvements and protocol changes, enhancing the efficiency and robustness of the Swarm network. 
 
 - Performance improvements & protocol changes

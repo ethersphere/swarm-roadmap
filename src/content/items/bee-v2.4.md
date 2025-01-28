@@ -4,4 +4,4 @@ subtitle: "Bee v2.4 pays tribute to ldeffenb, introducing the new node startup m
 status: done
 ---
 
-Bee v2.4 pays [tribute to ldeffenb](https://x.com/ethswarm/status/1881973371124302189), introducing the new node startup message: “Share the knowledge.”
+Bee [v2.4](https://github.com/ethersphere/bee/releases/tag/v2.4.0) pays tribute to ldeffenb, introducing the new node startup message: “Share the knowledge.”

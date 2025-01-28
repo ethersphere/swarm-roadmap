@@ -5,5 +5,4 @@ items:
   - bee-v21
   - bee-v22
   - bee-v23
-  - fellowship-programme
 ---

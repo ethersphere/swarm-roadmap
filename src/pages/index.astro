@@ -1,64 +1,98 @@
 ---
-import { getCollection, getEntries } from 'astro:content';
 import '../styles/base.css';
 import Layout from '../layouts/Layout.astro';
-import MilestoneCard from '../components/MilestoneCard.astro';
-import Card from '../components/Card.astro';
+
+import { getCollection, getEntries } from 'astro:content';
+
+export async function getStaticPaths() {
+  const milestones = await getCollection('milestones');
+  return milestones.map(entry => ({
+    params: { milestone: entry.slug }, props: { entry },
+  }));
+}
 
 let allMilestones = await getCollection('milestones')
 
-allMilestones = await Promise.all(
-  allMilestones.map(async milestone => ({
-    ...milestone,
-    items: await getEntries(milestone.data.items)
-  }))
-);
+const allItems = await Promise.all(
+  allMilestones.map(milestone => getEntries(milestone.data.items))
+).then(itemArrays => itemArrays.flat());
 
 ---
-
 <Layout title="Swarm Roadmap">
-	<main class="pt-12 pb-24 md:pb-48 text-[19px] leading-[26px] text-[#F6F7F9]">
+  <main class="pt-12 pb-24 md:pb-48 text-[19px] leading-[26px] text-[#F6F7F9]">
 
 		<div class="flex justify-center"><a href="https://www.ethswarm.org/"><img src="/swarm.png" alt="" class="h-9" /></a></div>
 
-		<div class="max-w-6xl mx-auto px-5 lg:px-6 pt-28 pb-24 text-center">
-			<h1 class="text-6xl md:text-[88px] font-bold leading-[97px] tracking-tight">Roadmap</h1>
-			<div class="mt-8 text-balance">
-				<p><strong>Embarking on the Journey to Swarm 3.0: A Year of Groundbreaking Developments</strong></p>
-				<br />
-				<p>As we venture through 2024, each release under the Swarm initiative brings us closer to the realization of Swarm 3.0, an epoch where decentralized data storage transforms into a ubiquitous utility, seamlessly integrated into our daily lives.</p>
-				<br />
-				<p>This journey is not just a series of software updates; it’s a revolution in how we access and manage data. Swarm 3.0 envisions a world where data privacy, security, and accessibility are inherent rights. With every milestone, we lay the groundwork for a future where decentralised storage and services empower individuals and businesses, fostering innovation and creating new economic opportunities. The transition to Swarm 3.0 is about building a resilient and scalable infrastructure that supports the digital demands of tomorrow, ensuring data is stored, accessed, and utilised in a fair and equitable manner. This roadmap outlines the steps we are taking this year to make this vision a reality, highlighting the technological advancements and strategic initiatives that will drive us forward.</p>
-			</div>
+		<div class="max-w-3xl mx-auto px-5 lg:px-6 pt-20 pb-12 md:pt-28 md:pb-24">
+			<h1 class="text-3xl md:text-[48px] font-bold md:leading-[1.2] tracking-tight text-balance text-center">Roadmap</h1>
+      <div class="mt-8">
+        <p>
+          <strong>Welcome to explore the roadmap tracing the Swarm Network from the recent past towards the near future.</strong>
+        </p>
 
-				<img class="h-[437px] w-auto mx-auto mt-24" src="/background.png" alt="" />
+        <br>
+
+        <!-- <p>As we venture through 2024, each release under the Swarm initiative brings us closer to the realization of Swarm 3.0, an epoch where decentralized data storage transforms into a ubiquitous utility, seamlessly integrated into our daily lives.</p> -->
+
+        <!-- <br> -->
+
+        <p>With the main features now complete, the core development team is shifting its focus to three crucial areas: improving (dev) UX and accessibility, optimizing performance and scalability at the network level, and fortifying the economic-incentives model. These efforts are all aimed at delivering tangible, real-world impact—turning the vision into reality.</p>
+
+      </div>
 		</div>
 
-		<div class="max-w-3xl mx-auto px-5 lg:px-6 flex flex-col gap-16">
-			{allMilestones.map(milestone => (
-				// @ts-ignore
-    <MilestoneCard title={milestone.data.title} status={milestone.data.status} items={milestone.items} slug={milestone.slug} />
-  ))}
-		</div>
+    <div class="max-w-2xl mx-auto px-5 lg:px-6 ">
+      <div class="flex flex-col gap-12 relative">
+        <div class="absolute top-0 bottom-0 h-full w-6 flex justify-center">
+          <div class="w-0.5 bg-line h-full"></div>
+        </div>
+<!-- loop items -->
+        {allItems.map(async (item) => {
+          const { Content } = await item.render();
+          return(
+            <div class="flex gap-5 md:gap-11 scroll-mt-5" data-status={item.data.status}>
+              <div class="size-6 shrink-0 mt-9 relative">
 
-		<div class="max-w-3xl mx-auto px-5 lg:px-6 text-center flex flex-col gap-6 mt-24 mb-24 md:mb-64">
-			<p>Each step at the roadmap we take is a bold stride towards transforming Swarm into the world's computer, where decentralized storage is not just a tool, but a transformational force for business, innovation, and everyday life. Emphasizing a fair data economy, we are committed to ensuring that data ownership and profit are equitably distributed among all participants. Join us on this journey to redefine the digital landscape and establish a new paradigm of fairness and accessibility in data management.</p>
-			<p>The dates and milestones outlined in this roadmap are subject to change.</p>
-		</div>
+                {item.data.status === 'done' && (
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><g clip-path="url(#a)"><path fill="#1b2128" stroke="#d7d9df" stroke-linecap="square" stroke-miterlimit="10" stroke-width="2" d="M12 23c6.075 0 11-4.925 11-11S18.075 1 12 1 1 5.925 1 12s4.925 11 11 11Z"/><path fill="#1b2128" d="m6 12 4 4 8-8"/><path stroke="#d7d9df" stroke-linecap="square" stroke-miterlimit="10" stroke-width="2" d="m6 12 4 4 8-8"/></g><defs><clipPath id="a"><path fill="#fff" d="M0 0h24v24H0z"/></clipPath></defs></svg>
+                )}
 
-		<div class="max-w-6xl mx-auto px-5 lg:px-6">
-			<h2 class="font-bold text-[48px] leading-[1.2] tracking-tight text-center">Vision</h2>
+                {/* {item.data.status === 'in-progress' && (
+               <svg class="animate-spin bg-[#1F2831B2] rounded-full" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><g clip-path="url(#a)"><path opacity=".4" d="M8 16A8 8 0 1 1 8 0a8 8 0 0 1 0 16ZM8 2a6 6 0 1 0 0 12A6 6 0 0 0 8 2Z" fill="#2D3843"></path><path d="M16 8h-2a6 6 0 0 0-6-6V0a8 8 0 0 1 8 8Z" fill="#D6D9DF"></path><path d="m9.98 15.73-.5-1.93a6 6 0 0 0 4.33-7.3l1.94-.5a8 8 0 0 1-5.77 9.73Z" fill="#D6D9DF"></path></g><defs><clipPath id="a"><path fill="#fff" d="M0 0h16v16H0z"></path></clipPath></defs></svg>
 
-			<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 mt-16">
-				<Card title="End Users" content="End users have a smooth experience starting a node and have the tools to monitor and interact with their local node. Apps connect to nodes and gateways in a secure way. Basic functionality of websites (files and directories) upload and download is optimised for speed and reliability." />
-				<Card title="Dapp Developers" content="Dapp Developers are provided with a mature toolkit that can be used to integrate Swarm in their Web3 dapp. This includes extensive and useful documentation, example dapps, and tutorials. They benefit from dashboards monitoring vital metrics displaying the node's operational health. Developers can rely on help provided in dev channels." />
-				<Card title="Operators" content="Node operators are sufficiently incentivised to contribute their bandwidth and storage space. Time-based allowance is calibrated so that clients paying for bandwidth will get reasonable service. As for storage, Postage Stamp revenue is redistributed to storer nodes directly in an efficient way without the need for storage contributors to stake their tokens." />
-				<Card title="Collaborators" content="Alternative client development is supported by consolidated and structured specifications of the DISC protocols and client strategies. High level standards and APIs are cleared up and documented. Integration, multiclient testing environment and quality assurance tools are provided. Ecosystem projects are provided with grants and fellowships." />
-				<Card title="Community" content="The Swarm Foundation aims to assist as much as it can in providing scaffoldings to the community to support their own agenda involving Swarm. It encourages autonomous, independent and permissionless communities to take further ownership over the protocol and its usages." />
-				<Card title="Commons" content="The Foundation subsidises efforts to make large datasets of public interest available through Swarm." />
+                )} */}
 
-			</div>
-		</div>
-	</main>
+                {item.data.status === 'in-progress' && (
+                  <svg class="animate-spin-1500ms" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><g clip-path="url(#a)"><path fill="#1b2128" stroke="#2f3842" stroke-linecap="square" stroke-miterlimit="10" stroke-width="2" d="M12 23c6.075 0 11-4.925 11-11S18.075 1 12 1 1 5.925 1 12s4.925 11 11 11Z"/><path fill="#d7d9df" d="M24 12h-2A10.011 10.011 0 0 0 12 2V0a12.013 12.013 0 0 1 12 12Z"/></g><defs><clipPath id="a"><path fill="#fff" d="M0 0h24v24H0z"/></clipPath></defs></svg>
+                )}
 
+                {item.data.status === 'to-do' && (
+               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><path fill="#1b2128" stroke="#2f3842" stroke-linecap="square" stroke-miterlimit="10" stroke-width="2" d="M12 23c6.075 0 11-4.925 11-11S18.075 1 12 1 1 5.925 1 12s4.925 11 11 11Z"/></svg>
+                )}
+
+              </div>
+          <div class="py-8 px-5 flex flex-col gap-4 rounded-xl bg-[#1F2831B2] border border-[#2D3843] shadow-card text-sm text-[#F6F7F9CC] leading-5 w-full">
+            <h2 class="font-bold text-2xl leading-[1.2] mb-4">{item.data.title}</h2>
+            <div class="prose">
+            <Content />
+            </div>
+          </div>
+            </div>
+        );
+        })}
+      </div>
+
+      <div class="text-center mt-16 md:mt-24">
+        <h3 class="font-bold mb-2">Missing features?</h3>
+        <div>
+          Suggest on <a href="https://discord.ethswarm.org/" class="bg-[#2B2B2B] font-semibold text-sm py-2 px-4 rounded-full no-underline leading-[48px]">Discord</a> or <br class="md:hidden" />propose a <a href="#" class="bg-[#2B2B2B] font-semibold text-sm py-2 px-4 rounded-full no-underline">SWIP</a>
+        </div>
+
+        <div class="mt-16 md:mt-24 opacity-80 text-sm md:text-[19px] md:leading-[26px] text-balance">
+          <h4 class="font-bold">Disclaimer:</h4>
+          <div>The dates and milestones outlined in this roadmap are subject to change.</div>
+        </div>
+      </div>
+    </div>
+    </main>
 </Layout>

@@ -1,6 +1,6 @@
 ---
 title: "Bee v2.0"
-subtitle: "Bee v2.0 introduces erasure codes to fortify data integrity across the network, marking a critical first step in our journey."
+subtitle: "Bee v2.0 introduces erasure codes to fortify data integrity across the network, marking a critical first step in our journey.git"
 status: done
 ---
 

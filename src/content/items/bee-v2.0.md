@@ -8,5 +8,5 @@ Bee [v2.0](https://github.com/ethersphere/bee/releases/tag/v2.0.0) introduces er
 
 - Erasure codes implemented on Swarm
 - /bzz endpoint added: obtains the content type and length of uploads
-- Sepolia blockchain set as default testnet
+- Sepolia blockchain set as the default testnet
 - Neighborhood suggester tool introduced

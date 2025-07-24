@@ -4,7 +4,7 @@ subtitle: "Bee v2.6 brings performance improvements and protocol changes, enhanc
 status: done
 ---
 
-Bee v2.6 accelerates node readiness and improves monitoring, with critical updates for node operators and the protocol layer.
+[Bee v2.6](https://github.com/ethersphere/bee/releases/tag/v2.6.0) accelerates node readiness and improves monitoring, with critical updates for node operators and the protocol layer.
 
 * Snapshot-based postage import enables faster startup for new nodes
 * Dynamic protocol readiness based on peer availability

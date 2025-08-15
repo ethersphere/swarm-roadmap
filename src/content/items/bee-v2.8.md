@@ -6,7 +6,7 @@ status: to-do
 
 Bee v2.8 delivers significant protocol changes and performance upgrades, including a new handshake mechanism, faster sampling, and improved data retrieval.
 
-* Non-backwards compatible handshake protocol change (dependent on mfw availability)
+* Non-backwards compatible handshake protocol change 
 * Further improvements to the sampling process for the redistribution game bring even faster hashing times
 * Improvements to the SOC sampling process 
 * Pullsync improvements based on collected metrics from previous release

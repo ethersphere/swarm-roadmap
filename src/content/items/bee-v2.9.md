@@ -1,6 +1,6 @@
 ---
 title: "Bee v2.9"
-subtitle: "Bee v2.9 adds direct libp2p websocket communication, expands GSOC capabilities, and optimizes transaction logic for high-traffic conditions."
+subtitle: "Bee v2.9 adds direct libp2p websocket communication, expands GSOC capabilities, and optimises transaction logic for high-traffic conditions."
 status: to-do
 ---
 

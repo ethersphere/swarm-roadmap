@@ -4,7 +4,7 @@ subtitle: "Bee v2.7 delivers protocol enhancements, sampling optimisations, and 
 status: in-progress
 ---
 
-Bee v2.7 introduces key fixes and optimisations across multiple areas, including AutoTLS in the browser for secure browser-node communication, sampling speed improvements, and decreased transaction costs.
+Bee v2.7 introduces key fixes and optimisations across multiple areas, including AutoTLS support, sampling speed improvements, and decreased transaction costs.
 
 * Add support for AutoTLS
 * Pullsync protocol metrics for better performance monitoring 

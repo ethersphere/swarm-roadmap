@@ -6,7 +6,7 @@ status: in-progress
 
 Bee v2.7 introduces key fixes and optimisations across multiple areas, including AutoTLS in the browser for secure browser-node communication, sampling speed improvements, and decreased transaction costs.
 
-* In-browser client AutoTLS secures communication between browser and node
+* Add support for AutoTLS
 * Pullsync protocol metrics for better performance monitoring 
 * Improvements to erasure coding implementation 
 * Fix for legacy feed handling

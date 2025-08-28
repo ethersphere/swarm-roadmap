@@ -9,5 +9,5 @@ status: done
 * Snapshot-based postage import enables faster startup for new nodes
 * Dynamic protocol readiness based on peer availability
 * Upload/download speed metrics added for improved observability
-* Memory and monitoring optimizations
+* Memory and monitoring optimisations
 * Upgraded dependencies and smart contract updates

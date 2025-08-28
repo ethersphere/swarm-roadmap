@@ -6,7 +6,7 @@ status: in-progress
 
 Bee v2.7 introduces key fixes and optimisations across multiple areas, including AutoTLS support, sampling speed improvements, and decreased transaction costs.
 
-* Add support for AutoTLS
+* Support for AutoTLS
 * Pullsync protocol metrics for better performance monitoring 
 * Improvements to erasure coding implementation 
 * Fix for legacy feed handling

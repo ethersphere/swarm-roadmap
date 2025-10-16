@@ -6,11 +6,10 @@ status: in-progress
 
 Bee v2.7 introduces key fixes and optimisations across multiple areas, including AutoTLS support, sampling speed improvements, and decreased transaction costs.
 
-* Support for AutoTLS
-* Pullsync protocol metrics for better performance monitoring 
-* Improvements to erasure coding implementation 
-* Fix for legacy feed handling
-* Ultra-light node postage snapshot skip fix
-* Transaction fee and cost optimisations
-* More efficient sampling process brings shorter sampling times
-* Pushsync performance fixes
+* AutoTLS – Enables automatic certificate handling for secure WebSocket communication, essential for Bee in the browser.
+* Multiple Underlay Addresses Support – Allows nodes to advertise multiple connection paths, improving peer discovery and connectivity.
+* Erasure Coding Improvements – Ensures better data reconstruction and chunk durability across the network.
+* Feeds Legacy Payload Param – Enhances compatibility with legacy feed formats.
+* SOC Replication – Adds redundancy for single-owner chunks, improving data availability guarantees.
+* Bootup Metrics – Helps operators monitor and analyze node startup behavior.
+* Gas Price Estimation Updates – Refines how transaction costs are estimated for better accuracy.

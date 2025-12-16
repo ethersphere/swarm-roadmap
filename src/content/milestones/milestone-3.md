@@ -5,4 +5,5 @@ items:
   - bee-v27
   - bee-v28
   - bee-v281
+  - bee-v282
 ---

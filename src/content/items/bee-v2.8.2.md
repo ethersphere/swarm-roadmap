@@ -1,6 +1,6 @@
 ---
 title: "PSS improvements"
-subtitle: "More performant chunk synchronization between full nodes"
+subtitle: "Fixing the case of missed messages when the node is not listening"
 status: to-do
 ---
 

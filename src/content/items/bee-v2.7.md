@@ -12,4 +12,4 @@ status: done
 * Feeds Legacy Payload Param – Enhances compatibility with legacy feed formats.
 * SOC Replication – Adds redundancy for single-owner chunks, improving data availability guarantees.
 * Bootup Metrics – Helps operators monitor and analyze node startup behavior.
-* Gas Price Estimation Updates – Refines how transaction costs are estimated for better accuracy. 
+* Gas Price Estimation Updates – Refines how transaction costs are estimated for better accuracy.

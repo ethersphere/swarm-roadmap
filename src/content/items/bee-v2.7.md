@@ -1,10 +1,10 @@
 ---
 title: "Bee v2.7"
 subtitle: "Bee v2.7 delivers protocol enhancements, sampling optimisations, and transaction cost improvements, advancing performance and efficiency for node operators."
-status: in-progress
+status: done
 ---
 
-Bee v2.7 introduces key fixes and optimisations across multiple areas, including AutoTLS support, sampling speed improvements, and decreased transaction costs.
+[Bee v2.7](https://github.com/ethersphere/bee/releases/tag/v2.7.0) introduces key fixes and optimisations across multiple areas, including AutoTLS support, sampling speed improvements, and decreased transaction costs.
 
 * AutoTLS – Enables automatic certificate handling for secure WebSocket communication, essential for Bee in the browser.
 * Multiple Underlay Addresses Support – Allows nodes to advertise multiple connection paths, improving peer discovery and connectivity.

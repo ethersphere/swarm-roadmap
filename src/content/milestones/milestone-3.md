@@ -9,4 +9,6 @@ items:
   - bee-v283
   - bee-v284
   - bee-v285
+  - bee-v286
+  - bee-v287
 ---

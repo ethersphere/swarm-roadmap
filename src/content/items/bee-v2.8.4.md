@@ -1,7 +1,7 @@
 ---
-title: "Identity management support"
-subtitle: "Providing client side primitives for decoupling the Ethereum identity from the node"
+title: "PSS improvements"
+subtitle: "Fixing the case of missed messages when the node is not listening"
 status: to-do
 ---
 
-Providing client side primitives for decoupling the Ethereum identity from the node.
+Fixing the case of missed messages when the node is not listening.

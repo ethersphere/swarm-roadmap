@@ -1,7 +1,7 @@
 ---
-title: "In-browser and mobile node support"
-subtitle: "Architectural and network changes to support connections from various environments"
+title: "Pullsync improvements"
+subtitle: "More performant chunk synchronization between full nodes"
 status: to-do
 ---
 
-Architectural and network changes to support connections from various environments.
+More performant chunk synchronization between full nodes.

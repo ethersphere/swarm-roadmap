@@ -1,7 +1,7 @@
 ---
-title: "Micropayment solution"
-subtitle: "Experimental x402 support for flexible payments between users and services"
+title: "In-browser and mobile node support"
+subtitle: "Architectural and network changes to support connections from various environments"
 status: to-do
 ---
 
-Experimental x402 support for flexible payments between users and services.
+Architectural and network changes to support connections from various environments.

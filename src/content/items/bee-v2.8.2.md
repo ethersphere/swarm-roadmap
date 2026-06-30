@@ -1,7 +1,7 @@
 ---
-title: "PSS improvements"
-subtitle: "Fixing the case of missed messages when the node is not listening"
+title: "Scaleability improvements"
+subtitle: "Hardening and maintenance of core components to optimize the Swarm network"
 status: to-do
 ---
 
-Fixing the case of missed messages when the node is not listening.
+Hardening and maintenance of core components to optimize the Swarm network.

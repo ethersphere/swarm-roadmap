@@ -4,16 +4,17 @@ import Layout from '../layouts/Layout.astro';
 
 // ============================================================================
 // PROTOTYPE — best-practice roadmap structure (does not touch the live page)
-//   1. Forward = strategic THEMES (Swarm's own three), Now / Next / Later,
-//      no version numbers.
-//   2. Shipped = auto-pulled from GitHub Releases (bee, bee-js, swarm-cli).
-//   3. Each theme: vision + workstreams.
+//   1. Forward = strategic THEMES (Swarm's own three), Now / Next / Later.
+//   2. SWIPs are merged into the theme columns (SWIP-N label, links to GitHub);
+//      a SWIPs filter pill shows only proposals. SHOW_DRAFT_SWIPS below
+//      controls whether draft proposals appear.
+//   3. Shipped = auto-pulled from GitHub Releases (bee, bee-js, swarm-cli).
 // ============================================================================
 
 type Phase = 'Done' | 'Now' | 'Next' | 'Later';
 const phaseOrder: Record<Phase, number> = { Done: 0, Now: 1, Next: 2, Later: 3 };
 const DONE_CAP = 6; // max Done cards shown per theme in the Done view before "Show all"
-interface Work { name: string; desc: string; phase: Phase }
+interface Work { name: string; desc: string; phase: Phase; badge?: string; swip?: { num: number; url: string } }
 interface Theme { title: string; vision: string; items: Work[] }
 
 const themes: Theme[] = [
@@ -44,6 +45,16 @@ const themes: Theme[] = [
     ],
   },
 ];
+
+// hand-maintained: which theme each SWIP belongs to (unlisted SWIPs — e.g. the
+// SWIP-0 process doc — are left out of the board)
+const swipTheme: Record<number, string> = {
+  23: 'UX & Accessibility',        // Access Control Trie (ACT)
+  22: 'UX & Accessibility',        // Feed Wrapping
+  21: 'Incentives & Economics',    // Reserve doubling
+  20: 'Incentives & Economics',    // Improved staking
+  19: 'Incentives & Economics',    // Neighbourhood hopping
+};
 
 const phaseStyle: Record<Phase, string> = {
   Done:  'bg-[#1FA85B]/15 text-[#7DDBA0] border border-[#1FA85B]/40',
@@ -154,7 +165,30 @@ const swipPhase = (status: string): Phase => {
   if (/draft/.test(s)) return 'Next';
   return 'Later'; // Stagnant, Withdrawn, etc.
 };
-const SWIP_CAP = 5; // SWIPs shown before "Show all"
+
+// only accepted proposals belong on the roadmap — drafts, proposals under
+// review, and withdrawn/stagnant ones stay off the board.
+// SHOW_DRAFT_SWIPS is a demo override: it adds draft/review SWIPs too, honestly
+// badged as "Draft". Set to false for production.
+const SHOW_DRAFT_SWIPS = true;
+const swipApproved = (status: string) => /final|implemented|accepted|living/i.test(status);
+const swipDraft = (status: string) => /draft|review|last call/i.test(status);
+
+// fold the mapped SWIPs into their theme's card list
+for (const s of swips) {
+  const approved = swipApproved(s.status);
+  if (!approved && !(SHOW_DRAFT_SWIPS && swipDraft(s.status))) continue;
+  const themeTitle = swipTheme[s.num];
+  const theme = themes.find((t) => t.title === themeTitle);
+  if (!theme) continue;
+  theme.items.push({
+    name: s.title,
+    desc: s.desc || 'Read the full proposal on GitHub.',
+    phase: swipPhase(s.status),
+    badge: approved ? undefined : 'Draft',
+    swip: { num: s.num, url: s.url },
+  });
+}
 
 // group by year (newest first)
 const byYear = new Map<number, Rel[]>();
@@ -242,10 +276,10 @@ const repoColor: Record<string, string> = {
     </div>
 
     <!-- ================= FORWARD: THEMES (Done / Now / Next / Later) ================= -->
-    <div class="max-w-7xl mx-auto px-5 lg:px-6" x-data="{ status: 'all' }">
+    <div class="max-w-6xl mx-auto px-5 lg:px-6" x-data="{ status: 'all' }">
       <!-- status filter -->
       <div class="flex flex-wrap justify-center gap-2 mb-8">
-        {['all', 'Done', 'Now', 'Next', 'Later'].map((t) => (
+        {['all', 'Done', 'Now', 'Next', 'Later', 'SWIPs'].map((t) => (
           <button type="button" @click={`status = '${t}'`}
             class="text-sm font-semibold px-4 py-1.5 rounded-full border border-[#2D3843] transition-colors"
             x-bind:class={`status === '${t}' ? 'bg-[#FF7300] text-black border-[#FF7300]' : 'bg-[#1F2831] text-[#9AA4AE] hover:text-white'`}>
@@ -253,7 +287,7 @@ const repoColor: Record<string, string> = {
           </button>
         ))}
       </div>
-      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div class="grid md:grid-cols-3 gap-5">
         {themes.map((theme) => {
           const active = theme.items.filter((i) => i.phase !== 'Done').sort((a, b) => phaseOrder[a.phase] - phaseOrder[b.phase]);
           const done = theme.items.filter((i) => i.phase === 'Done');
@@ -272,16 +306,29 @@ const repoColor: Record<string, string> = {
                   const di = isDone ? done.indexOf(it) : -1;
                   const showInAll = isDone ? di < doneInAll : true;
                   const withinCap = di < DONE_CAP;
-                  const xshow = isDone
+                  const swipShow = it.swip ? ` || status === 'SWIPs'` : '';
+                  const xshow = (isDone
                     ? `(status === 'all' && ${showInAll}) || (status === 'Done' && (${withinCap} || open))`
-                    : `status === 'all' || status === '${it.phase}'`;
-                  return (
-                    <div x-cloak x-show={xshow} class={`rounded-lg border p-4 ${isDone ? 'bg-[#131A20] border-[#243027] opacity-80' : 'bg-[#141B21] border-[#2D3843]'}`}>
+                    : `status === 'all' || status === '${it.phase}'`) + swipShow;
+                  const cardClass = `rounded-lg border p-4 ${isDone ? 'bg-[#131A20] border-[#243027] opacity-80' : 'bg-[#141B21] border-[#2D3843]'}`;
+                  const inner = (
+                    <>
                       <div class="flex items-start justify-between gap-2 mb-1.5">
                         <h3 class={`font-semibold text-[15px] leading-snug ${isDone ? 'text-[#cfd3da]' : ''}`}>{it.name}</h3>
-                        <span class={`shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full ${phaseStyle[it.phase]}`}>{it.phase}</span>
+                        <span class={`shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full ${phaseStyle[it.phase]}`}>{it.badge ?? it.phase}</span>
                       </div>
                       <p class="text-[13px] leading-5 text-[#F6F7F9AA]">{it.desc}</p>
+                      {it.swip && <p class="text-[11px] font-mono text-[#F6F7F966] mt-1.5">SWIP-{it.swip.num}</p>}
+                    </>
+                  );
+                  return it.swip ? (
+                    <a href={it.swip.url} target="_blank" rel="noopener noreferrer" x-cloak x-show={xshow}
+                      class={`${cardClass} no-underline hover:border-[#FF7300]/50 transition-colors`}>
+                      {inner}
+                    </a>
+                  ) : (
+                    <div x-cloak x-show={xshow} class={cardClass}>
+                      {inner}
                     </div>
                   );
                 })}
@@ -297,46 +344,6 @@ const repoColor: Record<string, string> = {
             </section>
           );
         })}
-
-        <!-- SWIPs column -->
-        <section class="flex flex-col md:grid md:grid-rows-subgrid md:row-span-2 rounded-xl bg-[#1F2831B2] border border-[#2D3843] shadow-card p-6" x-data="{ open: false }">
-          <div>
-            <h2 class="font-bold text-xl leading-tight">SWIPs</h2>
-            <p class="text-sm text-[#F6F7F999] mt-2 leading-5">Swarm Improvement Proposals — community-driven changes to the protocol.</p>
-          </div>
-          <div class="flex flex-col">
-          <div class="flex flex-col gap-3 mt-6 md:mt-0">
-            {swips.length === 0 ? (
-              <p class="text-[13px] leading-5 text-[#F6F7F9AA]">Could not load SWIPs (offline or rate-limited). They render live on a real build.</p>
-            ) : (
-              swips.map((s, i) => {
-                const phase = swipPhase(s.status);
-                const isDone = phase === 'Done';
-                return (
-                  <a href={s.url} target="_blank" rel="noopener noreferrer"
-                    x-cloak={i >= SWIP_CAP} x-show={i >= SWIP_CAP ? 'open' : undefined}
-                    class={`rounded-lg border p-4 no-underline hover:border-[#FF7300]/50 transition-colors ${isDone ? 'bg-[#131A20] border-[#243027] opacity-80' : 'bg-[#141B21] border-[#2D3843]'}`}>
-                    <div class="flex items-start justify-between gap-2 mb-1.5">
-                      <h3 class={`font-semibold text-[15px] leading-snug ${isDone ? 'text-[#cfd3da]' : ''}`}>{s.title}</h3>
-                      <span class={`shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full ${phaseStyle[phase]}`}>{phase}</span>
-                    </div>
-                    <p class="text-[13px] leading-5 text-[#F6F7F9AA]">{s.desc || 'Read the full proposal on GitHub.'}</p>
-                    <p class="text-[11px] font-mono text-[#F6F7F966] mt-1.5">SWIP-{s.num}</p>
-                  </a>
-                );
-              })
-            )}
-          </div>
-          {swips.length > SWIP_CAP && (
-            <button type="button" @click="open = !open"
-              class="text-xs font-semibold text-[#FFA552] mt-3 self-start hover:underline">
-              <span x-show="!open">Show all {swips.length} →</span>
-              <span x-show="open" x-cloak>Show less ↑</span>
-            </button>
-          )}
-          <a href="https://github.com/ethersphere/SWIPs" target="_blank" rel="noopener noreferrer" class="text-xs font-semibold text-[#FFA552] mt-3 self-start no-underline hover:underline">All SWIPs on GitHub →</a>
-          </div>
-        </section>
       </div>
 
       <!-- legend -->
@@ -345,6 +352,8 @@ const repoColor: Record<string, string> = {
         <span class={`px-2 py-0.5 rounded-full ${phaseStyle.Now}`}>Now</span> in progress
         <span class={`px-2 py-0.5 rounded-full ${phaseStyle.Next}`}>Next</span> up soon
         <span class={`px-2 py-0.5 rounded-full ${phaseStyle.Later}`}>Later</span> planned
+        <span>·</span>
+        <span>Cards marked <span class="font-mono text-[#F6F7F966]">SWIP-N</span> are {SHOW_DRAFT_SWIPS ? '' : 'accepted '}community proposals — <a href="https://github.com/ethersphere/SWIPs" target="_blank" rel="noopener noreferrer" class="text-[#FFA552] font-semibold no-underline hover:underline">all SWIPs on GitHub →</a></span>
       </div>
     </div>
 

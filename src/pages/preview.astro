@@ -6,35 +6,40 @@ import Layout from '../layouts/Layout.astro';
 // PROTOTYPE — best-practice roadmap structure (does not touch the live page)
 //   1. Forward = strategic THEMES (Swarm's own three), Now / Next / Later.
 //   2. SWIPs are merged into the theme columns (SWIP-N label, links to GitHub);
-//      a SWIPs filter pill shows only proposals. SHOW_DRAFT_SWIPS below
-//      controls whether draft proposals appear.
+//      a SWIPs filter pill shows only proposals. Card content and statuses are
+//      authored here — only SWIPs approved to be built are listed. (In future
+//      we may pull SWIP statuses live; for now this document is the source.)
 //   3. Shipped = auto-pulled from GitHub Releases (bee, bee-js, swarm-cli).
 // ============================================================================
 
 type Phase = 'Done' | 'Now' | 'Next' | 'Later';
 const phaseOrder: Record<Phase, number> = { Done: 0, Now: 1, Next: 2, Later: 3 };
 const DONE_CAP = 6; // max Done cards shown per theme in the Done view before "Show all"
-interface Work { name: string; desc: string; phase: Phase; badge?: string; swip?: { num: number; url: string } }
+interface Work { name: string; desc: string; phase: Phase; link?: string; swip?: { num: number; url: string } }
 interface Theme { title: string; vision: string; items: Work[] }
+
+const SWIP_URL = (n: number) => `https://github.com/ethersphere/SWIPs/blob/master/SWIPs/swip-${n}.md`;
 
 const themes: Theme[] = [
   {
     title: 'Performance & Scalability',
     vision: 'Keep the network fast and reliable as it grows.',
     items: [
-      { name: 'Peer verification & networking hardening', desc: 'Signed peer records and tighter handshakes — shipped in Bee v2.8.', phase: 'Done' },
       { name: 'Pullsync improvements', desc: 'More performant chunk synchronization between full nodes.', phase: 'Now' },
       { name: 'Scalability & hardening', desc: 'Hardening and maintenance of core components to optimise the network.', phase: 'Now' },
+      { name: 'Peer verification & networking hardening', desc: 'Signed peer records and tighter handshakes — shipped in Bee v2.8.', phase: 'Done' },
     ],
   },
   {
     title: 'UX & Accessibility',
     vision: 'Make running and building on Swarm work from anywhere, for anyone.',
     items: [
-      { name: 'In-browser & mobile nodes', desc: 'Architectural and network changes to support connections from various environments.', phase: 'Now' },
-      { name: 'AI-agent readiness', desc: 'Client-side primitives and Swarm MCP so AI agents can store and retrieve on Swarm.', phase: 'Now' },
-      { name: 'Messaging reliability (PSS / GSOC)', desc: 'Fix the case of missed messages when a node is not listening.', phase: 'Next' },
+      { name: 'WebSocket transport — in-browser node support', desc: 'Architectural and network changes to support connections from various environments.', phase: 'Done' },
+      { name: 'AI-agent readiness', desc: 'Client-side primitives and Swarm MCP so AI agents can store and retrieve on Swarm.', phase: 'Now', link: 'https://github.com/ethersphere/swarm-quickstart-skills' },
       { name: 'Identity management', desc: 'Client-side primitives for decoupling the Ethereum identity from the node.', phase: 'Now' },
+      { name: 'Messaging reliability (PSS / GSOC)', desc: 'Fix the case of missed messages when a node is not listening.', phase: 'Next' },
+      { name: 'Feed Wrapping', desc: 'Wrap entire content-addressed chunks directly within feeds, eliminating the separate JSON structure with CAC references and timestamps; streamlines retrieval.', phase: 'Done', swip: { num: 22, url: SWIP_URL(22) } },
+      { name: 'Access Control Trie (ACT)', desc: 'A data structure storing access control information for Swarm nodes, to ensure confidentiality, integrity and availability of data spread across nodes.', phase: 'Done', swip: { num: 23, url: SWIP_URL(23) } },
     ],
   },
   {
@@ -42,19 +47,12 @@ const themes: Theme[] = [
     vision: 'Strengthen the economic model that keeps data available.',
     items: [
       { name: 'Micropayments (x402)', desc: 'Experimental x402 support for flexible payments between users and services.', phase: 'Later' },
+      { name: 'Reserve doubling', desc: 'How to extend node storage capacity dedicated to the reserve to be able to calibrate operators’ profitability.', phase: 'Done', swip: { num: 21, url: SWIP_URL(21) } },
+      { name: 'Improved staking — excess stake withdrawal', desc: 'Allow users to withdraw part of their stakes; today the storer node’s stake is permanently locked, so returns depend solely on the redistribution game’s ROI.', phase: 'Done', swip: { num: 20, url: SWIP_URL(20) } },
+      { name: 'Neighbourhood hopping', desc: 'Support moving a node to another neighbourhood without paying the stake each time.', phase: 'Done', swip: { num: 19, url: SWIP_URL(19) } },
     ],
   },
 ];
-
-// hand-maintained: which theme each SWIP belongs to (unlisted SWIPs — e.g. the
-// SWIP-0 process doc — are left out of the board)
-const swipTheme: Record<number, string> = {
-  23: 'UX & Accessibility',        // Access Control Trie (ACT)
-  22: 'UX & Accessibility',        // Feed Wrapping
-  21: 'Incentives & Economics',    // Reserve doubling
-  20: 'Incentives & Economics',    // Improved staking
-  19: 'Incentives & Economics',    // Neighbourhood hopping
-};
 
 const phaseStyle: Record<Phase, string> = {
   Done:  'bg-[#1FA85B]/15 text-[#7DDBA0] border border-[#1FA85B]/40',
@@ -67,7 +65,6 @@ const phaseStyle: Record<Phase, string> = {
 const MAINNET = '2021-06-21T00:00:00Z';
 const repos = ['bee', 'bee-js', 'swarm-cli'];
 type Rel = { repo: string; name: string; date: string; url: string; body: string };
-type Swip = { num: number; title: string; status: string; created: string; url: string; desc: string };
 const token = import.meta.env.GITHUB_TOKEN;
 const ghHeaders: Record<string, string> = { Accept: 'application/vnd.github+json' };
 if (token) ghHeaders.Authorization = `Bearer ${token}`;
@@ -92,7 +89,7 @@ async function fetchAll(repo: string): Promise<Rel[]> {
 // cache GitHub responses in memory so dev-server reloads don't re-spend the
 // unauthenticated rate limit (60 req/h); a production build fetches once anyway
 const CACHE_TTL = 10 * 60 * 1000;
-const cache: { at: number; releases?: Rel[]; swips?: Swip[] } = ((globalThis as any).__previewGh3 ||= { at: 0 });
+const cache: { at: number; releases?: Rel[] } = ((globalThis as any).__previewGh4 ||= { at: 0 });
 const cacheFresh = Date.now() - cache.at < CACHE_TTL;
 
 let releases: Rel[] = [];
@@ -107,88 +104,74 @@ if (cacheFresh && cache.releases?.length) {
   }
 }
 
-// ---- SWIPs: pulled from github.com/ethersphere/SWIPs ----
-let swips: Swip[] = [];
-
-if (cacheFresh && cache.swips?.length) {
-  swips = cache.swips;
-} else try {
-  const res = await fetch('https://api.github.com/repos/ethersphere/SWIPs/contents/SWIPs', { headers: ghHeaders });
-  if (res.ok) {
-    const files: any[] = await res.json();
-    const mds = files.filter((f) => f.type === 'file' && /^swip-\d+\.md$/.test(f.name));
-    swips = (
-      await Promise.all(
-        mds.map(async (f): Promise<Swip | null> => {
-          const raw = await fetch(f.download_url, { headers: ghHeaders });
-          if (!raw.ok) return null;
-          const text = await raw.text();
-          const fm = text.match(/^---\n([\s\S]*?)\n---/)?.[1] ?? '';
-          const field = (k: string) => fm.match(new RegExp(`^${k}:\\s*(.+)$`, 'mi'))?.[1].trim() ?? '';
-          // first plain paragraph of the body -> short description
-          let desc = '';
-          for (const para of text.replace(/^---\n[\s\S]*?\n---/, '').split(/\n\s*\n/)) {
-            const t = para.trim();
-            if (!t || /^(#|!|\||<|-{3,})/.test(t)) continue;
-            desc = clean(t);
-            break;
-          }
-          if (desc.length > 90) desc = desc.slice(0, 87).trimEnd() + '…';
-          return {
-            num: parseInt(f.name.match(/\d+/)![0], 10),
-            title: field('title'),
-            status: field('status') || 'Draft',
-            created: field('created'),
-            url: f.html_url,
-            desc,
-          };
-        })
-      )
-    )
-      .filter((s): s is Swip => !!s)
-      .sort((a, b) => b.num - a.num);
-  }
-} catch (e) {
-  swips = [];
-}
-
 // refresh the cache with whatever loaded successfully
-if (releases.length) cache.releases = releases;
-if (swips.length) cache.swips = swips;
-if (releases.length || swips.length) cache.at = Date.now();
+if (releases.length) { cache.releases = releases; cache.at = Date.now(); }
 
-// map SWIP status onto the same phase vocabulary as the theme cards
-const swipPhase = (status: string): Phase => {
-  const s = status.toLowerCase();
-  if (/final|implemented|accepted|living/.test(s)) return 'Done';
-  if (/review|last call|active/.test(s)) return 'Now';
-  if (/draft/.test(s)) return 'Next';
-  return 'Later'; // Stagnant, Withdrawn, etc.
-};
-
-// only accepted proposals belong on the roadmap — drafts, proposals under
-// review, and withdrawn/stagnant ones stay off the board.
-// SHOW_DRAFT_SWIPS is a demo override: it adds draft/review SWIPs too, honestly
-// badged as "Draft". Set to false for production.
-const SHOW_DRAFT_SWIPS = true;
-const swipApproved = (status: string) => /final|implemented|accepted|living/i.test(status);
-const swipDraft = (status: string) => /draft|review|last call/i.test(status);
-
-// fold the mapped SWIPs into their theme's card list
-for (const s of swips) {
-  const approved = swipApproved(s.status);
-  if (!approved && !(SHOW_DRAFT_SWIPS && swipDraft(s.status))) continue;
-  const themeTitle = swipTheme[s.num];
-  const theme = themes.find((t) => t.title === themeTitle);
-  if (!theme) continue;
-  theme.items.push({
-    name: s.title,
-    desc: s.desc || 'Read the full proposal on GitHub.',
-    phase: swipPhase(s.status),
-    badge: approved ? undefined : 'Draft',
-    swip: { num: s.num, url: s.url },
-  });
-}
+/* -----------------------------------------------------------------------------
+ * DISABLED — live SWIP pull. For now SWIP cards (content + status) are authored
+ * inline in `themes` above, since statuses are decided in the planning doc and
+ * updated in the SWIP repo only afterwards. Re-enable this block when we want to
+ * pull SWIP statuses directly from github.com/ethersphere/SWIPs.
+ *
+ * To re-enable you'll also need to restore: the `Swip` type, the `swipTheme`
+ * (num -> theme) map, and a `swips` field on `cache`. Then remove the inline
+ * SWIP entries from `themes` so they aren't duplicated.
+ *
+ * type Swip = { num: number; title: string; status: string; created: string; url: string; desc: string };
+ * const swipTheme: Record<number, string> = {
+ *   23: 'UX & Accessibility', 22: 'UX & Accessibility',
+ *   21: 'Incentives & Economics', 20: 'Incentives & Economics', 19: 'Incentives & Economics',
+ * };
+ *
+ * let swips: Swip[] = [];
+ * if (cacheFresh && cache.swips?.length) {
+ *   swips = cache.swips;
+ * } else try {
+ *   const res = await fetch('https://api.github.com/repos/ethersphere/SWIPs/contents/SWIPs', { headers: ghHeaders });
+ *   if (res.ok) {
+ *     const files: any[] = await res.json();
+ *     const mds = files.filter((f) => f.type === 'file' && /^swip-\d+\.md$/.test(f.name));
+ *     swips = (
+ *       await Promise.all(
+ *         mds.map(async (f): Promise<Swip | null> => {
+ *           const raw = await fetch(f.download_url, { headers: ghHeaders });
+ *           if (!raw.ok) return null;
+ *           const text = await raw.text();
+ *           const fm = text.match(/^---\n([\s\S]*?)\n---/)?.[1] ?? '';
+ *           const field = (k: string) => fm.match(new RegExp(`^${k}:\\s*(.+)$`, 'mi'))?.[1].trim() ?? '';
+ *           let desc = '';
+ *           for (const para of text.replace(/^---\n[\s\S]*?\n---/, '').split(/\n\s*\n/)) {
+ *             const t = para.trim();
+ *             if (!t || /^(#|!|\||<|-{3,})/.test(t)) continue;
+ *             desc = clean(t);
+ *             break;
+ *           }
+ *           if (desc.length > 90) desc = desc.slice(0, 87).trimEnd() + '…';
+ *           return { num: parseInt(f.name.match(/\d+/)![0], 10), title: field('title'), status: field('status') || 'Draft', created: field('created'), url: f.html_url, desc };
+ *         })
+ *       )
+ *     ).filter((s): s is Swip => !!s).sort((a, b) => b.num - a.num);
+ *   }
+ * } catch (e) { swips = []; }
+ * if (swips.length) { cache.swips = swips; cache.at = Date.now(); }
+ *
+ * const swipPhase = (status: string): Phase => {
+ *   const s = status.toLowerCase();
+ *   if (/final|implemented|accepted|living/.test(s)) return 'Done';
+ *   if (/review|last call|active/.test(s)) return 'Now';
+ *   if (/draft/.test(s)) return 'Next';
+ *   return 'Later';
+ * };
+ * // only approved SWIPs belong on the roadmap (anyone can propose one; that
+ * // doesn't mean it will be built) — drafts/review/withdrawn stay off the board
+ * const swipApproved = (status: string) => /final|implemented|accepted|living/i.test(status);
+ * for (const s of swips) {
+ *   if (!swipApproved(s.status)) continue;
+ *   const theme = themes.find((t) => t.title === swipTheme[s.num]);
+ *   if (!theme) continue;
+ *   theme.items.push({ name: s.title, desc: s.desc || 'Read the full proposal on GitHub.', phase: swipPhase(s.status), swip: { num: s.num, url: s.url } });
+ * }
+ * --------------------------------------------------------------------------- */
 
 // group by year (newest first)
 const byYear = new Map<number, Rel[]>();
@@ -315,14 +298,15 @@ const repoColor: Record<string, string> = {
                     <>
                       <div class="flex items-start justify-between gap-2 mb-1.5">
                         <h3 class={`font-semibold text-[15px] leading-snug ${isDone ? 'text-[#cfd3da]' : ''}`}>{it.name}</h3>
-                        <span class={`shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full ${phaseStyle[it.phase]}`}>{it.badge ?? it.phase}</span>
+                        <span class={`shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full ${phaseStyle[it.phase]}`}>{it.phase}</span>
                       </div>
                       <p class="text-[13px] leading-5 text-[#F6F7F9AA]">{it.desc}</p>
                       {it.swip && <p class="text-[11px] font-mono text-[#F6F7F966] mt-1.5">SWIP-{it.swip.num}</p>}
                     </>
                   );
-                  return it.swip ? (
-                    <a href={it.swip.url} target="_blank" rel="noopener noreferrer" x-cloak x-show={xshow}
+                  const href = it.swip?.url ?? it.link;
+                  return href ? (
+                    <a href={href} target="_blank" rel="noopener noreferrer" x-cloak x-show={xshow}
                       class={`${cardClass} no-underline hover:border-[#FF7300]/50 transition-colors`}>
                       {inner}
                     </a>
@@ -353,7 +337,7 @@ const repoColor: Record<string, string> = {
         <span class={`px-2 py-0.5 rounded-full ${phaseStyle.Next}`}>Next</span> up soon
         <span class={`px-2 py-0.5 rounded-full ${phaseStyle.Later}`}>Later</span> planned
         <span>·</span>
-        <span>Cards marked <span class="font-mono text-[#F6F7F966]">SWIP-N</span> are {SHOW_DRAFT_SWIPS ? '' : 'accepted '}community proposals — <a href="https://github.com/ethersphere/SWIPs" target="_blank" rel="noopener noreferrer" class="text-[#FFA552] font-semibold no-underline hover:underline">all SWIPs on GitHub →</a></span>
+        <span>Cards marked <span class="font-mono text-[#F6F7F966]">SWIP-N</span> are accepted community proposals — <a href="https://github.com/ethersphere/SWIPs" target="_blank" rel="noopener noreferrer" class="text-[#FFA552] font-semibold no-underline hover:underline">all SWIPs on GitHub →</a></span>
       </div>
     </div>
 

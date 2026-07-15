@@ -15,7 +15,7 @@ import Layout from '../layouts/Layout.astro';
 type Phase = 'Done' | 'Now' | 'Next' | 'Later';
 const phaseOrder: Record<Phase, number> = { Done: 0, Now: 1, Next: 2, Later: 3 };
 const DONE_CAP = 6; // max Done cards shown per theme in the Done view before "Show all"
-interface Work { name: string; desc: string; phase: Phase; link?: string; swip?: { num: number; url: string } }
+interface Work { name: string; desc: string; phase: Phase; links?: { label: string; url: string }[]; swip?: { num: number; url: string } }
 interface Theme { title: string; vision: string; items: Work[] }
 
 const SWIP_URL = (n: number) => `https://github.com/ethersphere/SWIPs/blob/master/SWIPs/swip-${n}.md`;
@@ -35,7 +35,10 @@ const themes: Theme[] = [
     vision: 'Make running and building on Swarm work from anywhere, for anyone.',
     items: [
       { name: 'WebSocket transport — in-browser node support', desc: 'Architectural and network changes to support connections from various environments.', phase: 'Done' },
-      { name: 'AI-agent readiness', desc: 'Client-side primitives and Swarm MCP so AI agents can store and retrieve on Swarm.', phase: 'Now', link: 'https://github.com/ethersphere/swarm-quickstart-skills' },
+      { name: 'AI-agent readiness', desc: 'Client-side primitives and Swarm MCP so AI agents can store and retrieve on Swarm.', phase: 'Now', links: [
+        { label: 'Quickstart skills', url: 'https://github.com/ethersphere/swarm-quickstart-skills' },
+        { label: 'Swarm MCP', url: 'https://github.com/ethersphere/swarm-mcp/' },
+      ] },
       { name: 'Identity management', desc: 'Client-side primitives for decoupling the Ethereum identity from the node.', phase: 'Now' },
       { name: 'Messaging reliability (PSS / GSOC)', desc: 'Fix the case of missed messages when a node is not listening.', phase: 'Next' },
       { name: 'Feed Wrapping', desc: 'Wrap entire content-addressed chunks directly within feeds, eliminating the separate JSON structure with CAC references and timestamps; streamlines retrieval.', phase: 'Done', swip: { num: 22, url: SWIP_URL(22) } },
@@ -302,9 +305,16 @@ const repoColor: Record<string, string> = {
                       </div>
                       <p class="text-[13px] leading-5 text-[#F6F7F9AA]">{it.desc}</p>
                       {it.swip && <p class="text-[11px] font-mono text-[#F6F7F966] mt-1.5">SWIP-{it.swip.num}</p>}
+                      {it.links && (
+                        <div class="flex flex-wrap gap-x-3 gap-y-1 mt-2">
+                          {it.links.map((l) => (
+                            <a href={l.url} target="_blank" rel="noopener noreferrer" class="text-[11px] font-semibold text-[#FFA552] no-underline hover:underline">{l.label} ↗</a>
+                          ))}
+                        </div>
+                      )}
                     </>
                   );
-                  const href = it.swip?.url ?? it.link;
+                  const href = it.swip?.url;
                   return href ? (
                     <a href={href} target="_blank" rel="noopener noreferrer" x-cloak x-show={xshow}
                       class={`${cardClass} no-underline hover:border-[#FF7300]/50 transition-colors`}>

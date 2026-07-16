@@ -2,95 +2,423 @@
 import '../styles/base.css';
 import Layout from '../layouts/Layout.astro';
 
-import { getCollection, getEntries } from 'astro:content';
+// ============================================================================
+// Execution roadmap page.
+//   1. Forward = strategic THEMES (Swarm's own three), Now / Next / Later.
+//   2. SWIPs are merged into the theme columns (SWIP-N label, links to GitHub);
+//      a SWIPs filter pill shows only proposals. Card content and statuses are
+//      authored here — only SWIPs approved to be built are listed. (In future
+//      we may pull SWIP statuses live; for now this document is the source.)
+//   3. Shipped = auto-pulled from GitHub Releases (bee, bee-js, swarm-cli).
+// ============================================================================
 
-export async function getStaticPaths() {
-  const milestones = await getCollection('milestones');
-  return milestones.map(entry => ({
-    params: { milestone: entry.slug }, props: { entry },
-  }));
+type Phase = 'Done' | 'Now' | 'Next' | 'Later';
+const phaseOrder: Record<Phase, number> = { Done: 0, Now: 1, Next: 2, Later: 3 };
+const DONE_CAP = 6; // max Done cards shown per theme in the Done view before "Show all"
+interface Work { name: string; desc: string; phase: Phase; links?: { label: string; url: string }[]; swip?: { num: number; url: string } }
+interface Theme { title: string; vision: string; items: Work[] }
+
+const SWIP_URL = (n: number) => `https://github.com/ethersphere/SWIPs/blob/master/SWIPs/swip-${n}.md`;
+
+const themes: Theme[] = [
+  {
+    title: 'Performance & Scalability',
+    vision: 'Keep the network fast and reliable as it grows.',
+    items: [
+      { name: 'Pullsync improvements', desc: 'More performant chunk synchronization between full nodes.', phase: 'Now' },
+      { name: 'Scalability & hardening', desc: 'Hardening and maintenance of core components to optimise the network.', phase: 'Now' },
+      { name: 'Peer verification & networking hardening', desc: 'Signed peer records and tighter handshakes — shipped in Bee v2.8.', phase: 'Done' },
+    ],
+  },
+  {
+    title: 'UX & Accessibility',
+    vision: 'Make running and building on Swarm work from anywhere, for anyone.',
+    items: [
+      { name: 'WebSocket transport — in-browser node support', desc: 'Architectural and network changes to support connections from various environments.', phase: 'Done' },
+      { name: 'AI-agent readiness', desc: 'Client-side primitives and Swarm MCP so AI agents can store and retrieve on Swarm.', phase: 'Now', links: [
+        { label: 'Quickstart skills', url: 'https://github.com/ethersphere/swarm-quickstart-skills' },
+        { label: 'Swarm MCP', url: 'https://github.com/ethersphere/swarm-mcp/' },
+      ] },
+      { name: 'Identity management', desc: 'Client-side primitives for decoupling the Ethereum identity from the node.', phase: 'Now' },
+      { name: 'Messaging reliability (PSS / GSOC)', desc: 'Fix the case of missed messages when a node is not listening.', phase: 'Next' },
+      { name: 'Feed Wrapping', desc: 'Wrap entire content-addressed chunks directly within feeds, eliminating the separate JSON structure with CAC references and timestamps; streamlines retrieval.', phase: 'Done', swip: { num: 22, url: SWIP_URL(22) } },
+      { name: 'Access Control Trie (ACT)', desc: 'A data structure storing access control information for Swarm nodes, to ensure confidentiality, integrity and availability of data spread across nodes.', phase: 'Done', swip: { num: 23, url: SWIP_URL(23) } },
+    ],
+  },
+  {
+    title: 'Incentives & Economics',
+    vision: 'Strengthen the economic model that keeps data available.',
+    items: [
+      { name: 'Micropayments (x402)', desc: 'Experimental x402 support for flexible payments between users and services.', phase: 'Later' },
+      { name: 'Reserve doubling', desc: 'How to extend node storage capacity dedicated to the reserve to be able to calibrate operators’ profitability.', phase: 'Done', swip: { num: 21, url: SWIP_URL(21) } },
+      { name: 'Improved staking — excess stake withdrawal', desc: 'Allow users to withdraw part of their stakes; today the storer node’s stake is permanently locked, so returns depend solely on the redistribution game’s ROI.', phase: 'Done', swip: { num: 20, url: SWIP_URL(20) } },
+      { name: 'Neighbourhood hopping', desc: 'Support moving a node to another neighbourhood without paying the stake each time.', phase: 'Done', swip: { num: 19, url: SWIP_URL(19) } },
+    ],
+  },
+];
+
+const phaseStyle: Record<Phase, string> = {
+  Done:  'bg-[#1FA85B]/15 text-[#7DDBA0] border border-[#1FA85B]/40',
+  Now:   'bg-[#FF7300]/15 text-[#FFA552] border border-[#FF7300]/40',
+  Next:  'bg-[#3B82F6]/15 text-[#93BBFC] border border-[#3B82F6]/40',
+  Later: 'bg-[#2D3843] text-[#9AA4AE] border border-[#3a4650]',
+};
+
+// ---- Shipped: auto-pulled from GitHub Releases, ALL since mainnet launch ----
+const MAINNET = '2021-06-21T00:00:00Z';
+const repos = ['bee', 'bee-js', 'swarm-cli'];
+type Rel = { repo: string; name: string; date: string; url: string; body: string };
+const token = import.meta.env.GITHUB_TOKEN;
+const ghHeaders: Record<string, string> = { Accept: 'application/vnd.github+json' };
+if (token) ghHeaders.Authorization = `Bearer ${token}`;
+
+async function fetchAll(repo: string): Promise<Rel[]> {
+  const out: Rel[] = [];
+  for (let page = 1; page <= 10; page++) {
+    const res = await fetch(`https://api.github.com/repos/ethersphere/${repo}/releases?per_page=100&page=${page}`, { headers: ghHeaders });
+    if (!res.ok) break;
+    const data: any[] = await res.json();
+    if (!data.length) break;
+    for (const r of data) {
+      if (r.draft || r.prerelease || !r.published_at || r.published_at < MAINNET) continue;
+      out.push({ repo, name: r.tag_name || r.name, date: r.published_at, url: r.html_url, body: r.body || '' });
+    }
+    const last = data[data.length - 1];
+    if (data.length < 100 || (last?.published_at && last.published_at < MAINNET)) break;
+  }
+  return out;
 }
 
-let allMilestones = await getCollection('milestones')
+// cache GitHub responses in memory so dev-server reloads don't re-spend the
+// unauthenticated rate limit (60 req/h); a production build fetches once anyway
+const CACHE_TTL = 10 * 60 * 1000;
+const cache: { at: number; releases?: Rel[] } = ((globalThis as any).__previewGh4 ||= { at: 0 });
+const cacheFresh = Date.now() - cache.at < CACHE_TTL;
 
-const allItems = await Promise.all(
-  allMilestones.map(milestone => getEntries(milestone.data.items))
-).then(itemArrays => itemArrays.flat());
+let releases: Rel[] = [];
+if (cacheFresh && cache.releases?.length) {
+  releases = cache.releases;
+} else {
+  try {
+    const results = await Promise.all(repos.map(fetchAll));
+    releases = results.flat().sort((a, b) => (a.date < b.date ? 1 : -1));
+  } catch (e) {
+    releases = [];
+  }
+}
 
+// refresh the cache with whatever loaded successfully
+if (releases.length) { cache.releases = releases; cache.at = Date.now(); }
+
+/* -----------------------------------------------------------------------------
+ * DISABLED — live SWIP pull. For now SWIP cards (content + status) are authored
+ * inline in `themes` above, since statuses are decided in the planning doc and
+ * updated in the SWIP repo only afterwards. Re-enable this block when we want to
+ * pull SWIP statuses directly from github.com/ethersphere/SWIPs.
+ *
+ * To re-enable you'll also need to restore: the `Swip` type, the `swipTheme`
+ * (num -> theme) map, and a `swips` field on `cache`. Then remove the inline
+ * SWIP entries from `themes` so they aren't duplicated.
+ *
+ * type Swip = { num: number; title: string; status: string; created: string; url: string; desc: string };
+ * const swipTheme: Record<number, string> = {
+ *   23: 'UX & Accessibility', 22: 'UX & Accessibility',
+ *   21: 'Incentives & Economics', 20: 'Incentives & Economics', 19: 'Incentives & Economics',
+ * };
+ *
+ * let swips: Swip[] = [];
+ * if (cacheFresh && cache.swips?.length) {
+ *   swips = cache.swips;
+ * } else try {
+ *   const res = await fetch('https://api.github.com/repos/ethersphere/SWIPs/contents/SWIPs', { headers: ghHeaders });
+ *   if (res.ok) {
+ *     const files: any[] = await res.json();
+ *     const mds = files.filter((f) => f.type === 'file' && /^swip-\d+\.md$/.test(f.name));
+ *     swips = (
+ *       await Promise.all(
+ *         mds.map(async (f): Promise<Swip | null> => {
+ *           const raw = await fetch(f.download_url, { headers: ghHeaders });
+ *           if (!raw.ok) return null;
+ *           const text = await raw.text();
+ *           const fm = text.match(/^---\n([\s\S]*?)\n---/)?.[1] ?? '';
+ *           const field = (k: string) => fm.match(new RegExp(`^${k}:\\s*(.+)$`, 'mi'))?.[1].trim() ?? '';
+ *           let desc = '';
+ *           for (const para of text.replace(/^---\n[\s\S]*?\n---/, '').split(/\n\s*\n/)) {
+ *             const t = para.trim();
+ *             if (!t || /^(#|!|\||<|-{3,})/.test(t)) continue;
+ *             desc = clean(t);
+ *             break;
+ *           }
+ *           if (desc.length > 90) desc = desc.slice(0, 87).trimEnd() + '…';
+ *           return { num: parseInt(f.name.match(/\d+/)![0], 10), title: field('title'), status: field('status') || 'Draft', created: field('created'), url: f.html_url, desc };
+ *         })
+ *       )
+ *     ).filter((s): s is Swip => !!s).sort((a, b) => b.num - a.num);
+ *   }
+ * } catch (e) { swips = []; }
+ * if (swips.length) { cache.swips = swips; cache.at = Date.now(); }
+ *
+ * const swipPhase = (status: string): Phase => {
+ *   const s = status.toLowerCase();
+ *   if (/final|implemented|accepted|living/.test(s)) return 'Done';
+ *   if (/review|last call|active/.test(s)) return 'Now';
+ *   if (/draft/.test(s)) return 'Next';
+ *   return 'Later';
+ * };
+ * // only approved SWIPs belong on the roadmap (anyone can propose one; that
+ * // doesn't mean it will be built) — drafts/review/withdrawn stay off the board
+ * const swipApproved = (status: string) => /final|implemented|accepted|living/i.test(status);
+ * for (const s of swips) {
+ *   if (!swipApproved(s.status)) continue;
+ *   const theme = themes.find((t) => t.title === swipTheme[s.num]);
+ *   if (!theme) continue;
+ *   theme.items.push({ name: s.title, desc: s.desc || 'Read the full proposal on GitHub.', phase: swipPhase(s.status), swip: { num: s.num, url: s.url } });
+ * }
+ * --------------------------------------------------------------------------- */
+
+// group by year (newest first)
+const byYear = new Map<number, Rel[]>();
+for (const r of releases) {
+  const y = new Date(r.date).getFullYear();
+  if (!byYear.has(y)) byYear.set(y, []);
+  byYear.get(y)!.push(r);
+}
+const years = [...byYear.keys()].sort((a, b) => b - a);
+const currentYear = years[0];
+
+// per-year per-repo counts (for the tab filter, computed at build)
+const repoCounts: Record<string, Record<string, number>> = {};
+for (const r of releases) {
+  const y = String(new Date(r.date).getFullYear());
+  (repoCounts[y] ||= {});
+  repoCounts[y][r.repo] = (repoCounts[y][r.repo] || 0) + 1;
+}
+const countsJson = JSON.stringify(repoCounts);
+
+// Pull a short overview + a few highlights out of each release's notes.
+function clean(s: string): string {
+  return s
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // [text](url) -> text
+    .replace(/\*\*([^*]+)\*\*/g, '$1')       // **bold**
+    .replace(/`([^`]+)`/g, '$1')             // `code`
+    .replace(/[*_>#]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+function summarize(body: string): { summary: string; highlights: string[] } {
+  const lines = body.replace(/\r/g, '').split('\n');
+  const sum: string[] = [];
+  for (const ln of lines) {
+    const t = ln.trim();
+    if (!t) { if (sum.length) break; else continue; }
+    if (/^(#|>|[-*]|\||!)/.test(t)) break;
+    sum.push(t);
+  }
+  let summary = clean(sum.join(' '));
+  if (summary.length > 260) summary = summary.slice(0, 257).trimEnd() + '…';
+  const highlights: string[] = [];
+  for (const ln of lines) {
+    const m = ln.match(/^\s*[-*]\s+(.*)$/);
+    if (m) {
+      let h = clean(m[1])
+        .replace(/\s+by @\S+.*$/i, '')                 // "...by @user in <url>"
+        .replace(/\s*\([0-9a-f]{7,40}\)\s*$/i, '')      // trailing commit hash
+        .replace(/\s*\(#?\d+\)\s*$/, '')                // trailing (#123) / (123)
+        .replace(/\s*\([0-9a-f]{7,40}\)\s*$/i, '')      // hash that sat before the PR ref
+        .replace(/^(feat|fix|chore|perf|refactor|docs|build|ci|test|style|revert)(\([^)]*\))?:\s*/i, '') // conventional-commit prefix
+        .trim();
+      h = h.charAt(0).toUpperCase() + h.slice(1);
+      const short = h.length > 110 ? h.slice(0, 107).trimEnd() + '…' : h;
+      if (h.length > 3 && !highlights.includes(short)) highlights.push(short);
+    }
+    if (highlights.length >= 3) break;
+  }
+  return { summary, highlights };
+}
+
+const fmt = (d: string) =>
+  d ? new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '';
+const repoColor: Record<string, string> = {
+  'bee': 'text-[#FFA552]',
+  'bee-js': 'text-[#93BBFC]',
+  'swarm-cli': 'text-[#9AE6B4]',
+};
 ---
-<Layout title="Swarm Roadmap">
+<Layout title="Execution roadmap — Swarm">
   <main class="pt-12 pb-24 md:pb-48 text-[19px] leading-[26px] text-[#F6F7F9]">
 
-		<div class="flex justify-center"><a href="https://www.ethswarm.org/"><img src="/swarm.png" alt="" class="h-9" /></a></div>
+    <div class="flex justify-center"><a href="https://www.ethswarm.org/"><img src="/swarm.png" alt="" class="h-9" /></a></div>
 
-		<div class="max-w-3xl mx-auto px-5 lg:px-6 pt-20 pb-12 md:pt-28 md:pb-24">
-			<h1 class="text-3xl md:text-[48px] font-bold md:leading-[1.2] tracking-tight text-balance text-center">Roadmap</h1>
-      <div class="mt-8">
-        <p>
-          <strong>Welcome to the roadmap tracing the Swarm Network’s journey from its recent past to its near future.</strong>
-        </p>
-
-        <br>
-
-      
-
-        <p>With the main features now complete, the core development team is shifting its focus to three crucial areas: improving UX and accessibility, optimising performance and scalability at the network level, and fortifying the economic-incentives model. These efforts aim to deliver tangible, real-world impact—turning the vision into reality.</p>
-
+    <div class="max-w-3xl mx-auto px-5 lg:px-6 pt-20 pb-10 md:pt-28 md:pb-16">
+      <div class="text-center">
+        <h1 class="text-3xl md:text-[48px] font-bold md:leading-[1.2] tracking-tight text-balance">Execution roadmap</h1>
       </div>
-		</div>
+      <div class="mt-8">
+        <p><strong>Where Swarm is headed — and what has already shipped.</strong></p>
+        <br>
+        <p>The core development team is focused on three areas: <strong>improving UX and accessibility</strong>, <strong>optimising performance and scalability</strong>, and <strong>fortifying the economic-incentives model</strong>. The roadmap below groups work under these themes; the timeline at the bottom tracks what has been released.</p>
+      </div>
+    </div>
 
-    <div class="max-w-2xl mx-auto px-5 lg:px-6 ">
-      <div class="flex flex-col gap-12 relative">
-        <div class="absolute top-0 bottom-0 h-full w-6 flex justify-center">
-          <div class="w-0.5 bg-line h-full"></div>
-        </div>
-<!-- loop items -->
-        {allItems.map(async (item) => {
-          const { Content } = await item.render();
-          return(
-            <div class="flex gap-5 md:gap-11 scroll-mt-5" data-status={item.data.status}>
-              <div class="size-6 shrink-0 mt-9 relative">
-
-                {item.data.status === 'done' && (
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><g clip-path="url(#a)"><path fill="#1b2128" stroke="#d7d9df" stroke-linecap="square" stroke-miterlimit="10" stroke-width="2" d="M12 23c6.075 0 11-4.925 11-11S18.075 1 12 1 1 5.925 1 12s4.925 11 11 11Z"/><path fill="#1b2128" d="m6 12 4 4 8-8"/><path stroke="#d7d9df" stroke-linecap="square" stroke-miterlimit="10" stroke-width="2" d="m6 12 4 4 8-8"/></g><defs><clipPath id="a"><path fill="#fff" d="M0 0h24v24H0z"/></clipPath></defs></svg>
-                )}
-
-                {/* {item.data.status === 'in-progress' && (
-               <svg class="animate-spin bg-[#1F2831B2] rounded-full" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><g clip-path="url(#a)"><path opacity=".4" d="M8 16A8 8 0 1 1 8 0a8 8 0 0 1 0 16ZM8 2a6 6 0 1 0 0 12A6 6 0 0 0 8 2Z" fill="#2D3843"></path><path d="M16 8h-2a6 6 0 0 0-6-6V0a8 8 0 0 1 8 8Z" fill="#D6D9DF"></path><path d="m9.98 15.73-.5-1.93a6 6 0 0 0 4.33-7.3l1.94-.5a8 8 0 0 1-5.77 9.73Z" fill="#D6D9DF"></path></g><defs><clipPath id="a"><path fill="#fff" d="M0 0h16v16H0z"></path></clipPath></defs></svg>
-
-                )} */}
-
-                {item.data.status === 'in-progress' && (
-                  <svg class="animate-spin-1500ms" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><g clip-path="url(#a)"><path fill="#1b2128" stroke="#2f3842" stroke-linecap="square" stroke-miterlimit="10" stroke-width="2" d="M12 23c6.075 0 11-4.925 11-11S18.075 1 12 1 1 5.925 1 12s4.925 11 11 11Z"/><path fill="#d7d9df" d="M24 12h-2A10.011 10.011 0 0 0 12 2V0a12.013 12.013 0 0 1 12 12Z"/></g><defs><clipPath id="a"><path fill="#fff" d="M0 0h24v24H0z"/></clipPath></defs></svg>
-                )}
-
-                {item.data.status === 'to-do' && (
-               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><path fill="#1b2128" stroke="#2f3842" stroke-linecap="square" stroke-miterlimit="10" stroke-width="2" d="M12 23c6.075 0 11-4.925 11-11S18.075 1 12 1 1 5.925 1 12s4.925 11 11 11Z"/></svg>
-                )}
-
+    <!-- ================= FORWARD: THEMES (Done / Now / Next / Later) ================= -->
+    <div class="max-w-6xl mx-auto px-5 lg:px-6" x-data="{ status: 'all' }">
+      <!-- status filter -->
+      <div class="flex flex-wrap justify-center gap-2 mb-8">
+        {['all', 'Done', 'Now', 'Next', 'Later', 'SWIPs'].map((t) => (
+          <button type="button" @click={`status = '${t}'`}
+            class="text-sm font-semibold px-4 py-1.5 rounded-full border border-[#2D3843] transition-colors"
+            x-bind:class={`status === '${t}' ? 'bg-[#FF7300] text-black border-[#FF7300]' : 'bg-[#1F2831] text-[#9AA4AE] hover:text-white'`}>
+            {t === 'all' ? 'All' : t}
+          </button>
+        ))}
+      </div>
+      <div class="grid md:grid-cols-3 gap-5">
+        {themes.map((theme) => {
+          const active = theme.items.filter((i) => i.phase !== 'Done').sort((a, b) => phaseOrder[a.phase] - phaseOrder[b.phase]);
+          const done = theme.items.filter((i) => i.phase === 'Done');
+          const doneInAll = Math.max(0, 5 - active.length); // backfill each column toward ~5 cards
+          const ordered = [...active, ...done];
+          return (
+            <section class="flex flex-col md:grid md:grid-rows-subgrid md:row-span-2 rounded-xl bg-[#1F2831B2] border border-[#2D3843] shadow-card p-6" x-data="{ open: false }">
+              <div>
+                <h2 class="font-bold text-xl leading-tight">{theme.title}</h2>
+                <p class="text-sm text-[#F6F7F999] mt-2 leading-5">{theme.vision}</p>
               </div>
-          <div class="py-8 px-5 flex flex-col gap-4 rounded-xl bg-[#1F2831B2] border border-[#2D3843] shadow-card text-sm text-[#F6F7F9CC] leading-5 w-full">
-            <h2 class="font-bold text-2xl leading-[1.2] mb-4">{item.data.title}</h2>
-            <div class="prose">
-            <Content />
-            </div>
-          </div>
-            </div>
-        );
+              <div class="flex flex-col">
+              <div class="flex flex-col gap-3 mt-6 md:mt-0">
+                {ordered.map((it) => {
+                  const isDone = it.phase === 'Done';
+                  const di = isDone ? done.indexOf(it) : -1;
+                  const showInAll = isDone ? di < doneInAll : true;
+                  const withinCap = di < DONE_CAP;
+                  const swipShow = it.swip ? ` || status === 'SWIPs'` : '';
+                  const xshow = (isDone
+                    ? `(status === 'all' && ${showInAll}) || (status === 'Done' && (${withinCap} || open))`
+                    : `status === 'all' || status === '${it.phase}'`) + swipShow;
+                  const cardClass = `rounded-lg border p-4 ${isDone ? 'bg-[#131A20] border-[#243027] opacity-80' : 'bg-[#141B21] border-[#2D3843]'}`;
+                  const inner = (
+                    <>
+                      <div class="flex items-start justify-between gap-2 mb-1.5">
+                        <h3 class={`font-semibold text-[15px] leading-snug ${isDone ? 'text-[#cfd3da]' : ''}`}>{it.name}</h3>
+                        <span class={`shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full ${phaseStyle[it.phase]}`}>{it.phase}</span>
+                      </div>
+                      <p class="text-[13px] leading-5 text-[#F6F7F9AA]">{it.desc}</p>
+                      {it.swip && <p class="text-[11px] font-mono text-[#F6F7F966] mt-1.5">SWIP-{it.swip.num}</p>}
+                      {it.links && (
+                        <div class="flex flex-wrap gap-x-3 gap-y-1 mt-2">
+                          {it.links.map((l) => (
+                            <a href={l.url} target="_blank" rel="noopener noreferrer" class="text-[11px] font-semibold text-[#FFA552] no-underline hover:underline">{l.label} ↗</a>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  );
+                  const href = it.swip?.url;
+                  return href ? (
+                    <a href={href} target="_blank" rel="noopener noreferrer" x-cloak x-show={xshow}
+                      class={`${cardClass} no-underline hover:border-[#FF7300]/50 transition-colors`}>
+                      {inner}
+                    </a>
+                  ) : (
+                    <div x-cloak x-show={xshow} class={cardClass}>
+                      {inner}
+                    </div>
+                  );
+                })}
+              </div>
+              {done.length > DONE_CAP && (
+                <button type="button" x-cloak x-show="status === 'Done'" @click="open = !open"
+                  class="text-xs font-semibold text-[#FFA552] mt-3 self-start hover:underline">
+                  <span x-show="!open">Show all {done.length} →</span>
+                  <span x-show="open">Show less ↑</span>
+                </button>
+              )}
+              </div>
+            </section>
+          );
         })}
       </div>
 
-      <div class="text-center mt-16 md:mt-24">
-        <h3 class="font-bold mb-2">Missing features?</h3>
-        <div>
-          Suggest on <a href="https://discord.ethswarm.org/" class="bg-[#2B2B2B] font-semibold text-sm py-2 px-4 rounded-full no-underline leading-[48px]">Discord</a> or <br class="md:hidden" />propose a <a href="#" class="bg-[#2B2B2B] font-semibold text-sm py-2 px-4 rounded-full no-underline">SWIP</a>
-        </div>
-
-        <div class="mt-16 md:mt-24 opacity-80 text-sm md:text-[19px] md:leading-[26px] text-balance">
-          <h4 class="font-bold">Disclaimer:</h4>
-          <div>The dates and milestones outlined in this roadmap are subject to change.</div>
-        </div>
+      <!-- legend -->
+      <div class="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 mt-6 text-xs text-[#F6F7F999]">
+        <span class={`px-2 py-0.5 rounded-full ${phaseStyle.Done}`}>Done</span> shipped
+        <span class={`px-2 py-0.5 rounded-full ${phaseStyle.Now}`}>Now</span> in progress
+        <span class={`px-2 py-0.5 rounded-full ${phaseStyle.Next}`}>Next</span> up soon
+        <span class={`px-2 py-0.5 rounded-full ${phaseStyle.Later}`}>Later</span> planned
+        <span>·</span>
+        <span>Cards marked <span class="font-mono text-[#F6F7F966]">SWIP-N</span> are accepted community proposals — <a href="https://github.com/ethersphere/SWIPs" target="_blank" rel="noopener noreferrer" class="text-[#FFA552] font-semibold no-underline hover:underline">all SWIPs on GitHub →</a></span>
       </div>
     </div>
-    </main>
+
+    <!-- ================= SHIPPED: auto-pulled from GitHub ================= -->
+    <div class="max-w-2xl mx-auto px-5 lg:px-6 mt-20 md:mt-28" x-data={`{ repo: 'bee', counts: ${countsJson} }`}>
+      <div class="text-center mb-8">
+        <h2 class="text-2xl md:text-3xl font-bold tracking-tight">Shipped</h2>
+        <p class="text-sm text-[#F6F7F999] mt-2">Every release since mainnet launch (June 2021). {releases.length} in total.</p>
+      </div>
+
+      <!-- repo filter tabs -->
+      <div class="flex flex-wrap justify-center gap-2 mb-10">
+        {['bee', 'bee-js', 'swarm-cli', 'all'].map((t) => (
+          <button type="button" @click={`repo = '${t}'`}
+            class="text-sm font-semibold px-4 py-1.5 rounded-full border border-[#2D3843] transition-colors"
+            x-bind:class={`repo === '${t}' ? 'bg-[#FF7300] text-black border-[#FF7300]' : 'bg-[#1F2831] text-[#9AA4AE] hover:text-white'`}>
+            {t === 'all' ? 'All' : t}
+          </button>
+        ))}
+      </div>
+
+      {releases.length === 0 ? (
+        <p class="text-center text-sm text-[#F6F7F999]">Could not load releases (offline or rate-limited). They render live on a real build.</p>
+      ) : (
+        <div class="flex flex-col gap-6">
+          {years.map((year) => (
+            <details open={year === currentYear} class="group/year" x-show={`repo === 'all' || (counts['${year}'] && counts['${year}'][repo] > 0)`}>
+              <summary class="flex items-center gap-3 cursor-pointer select-none py-2 list-none [&::-webkit-details-marker]:hidden border-b border-[#2D3843]">
+                <svg class="size-4 shrink-0 text-[#9AA4AE] transition-transform group-open/year:rotate-180" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg>
+                <span class="font-bold text-xl">{year}</span>
+                <span class="text-xs text-[#F6F7F999]" x-text={`(repo === 'all' ? ${byYear.get(year)!.length} : ((counts['${year}'] && counts['${year}'][repo]) || 0)) + ' releases'`}>{byYear.get(year)!.length} releases</span>
+              </summary>
+              <div class="flex flex-col gap-3 mt-4">
+                {byYear.get(year)!.map((r) => {
+                  const { summary, highlights } = summarize(r.body);
+                  return (
+                    <details class="rounded-lg bg-[#1F2831B2] border border-[#2D3843] overflow-hidden group/rel" x-show={`repo === 'all' || repo === '${r.repo}'`}>
+                      <summary class="flex items-center gap-4 px-5 py-3 cursor-pointer select-none hover:bg-[#222C35] list-none [&::-webkit-details-marker]:hidden">
+                        <span class={`font-mono text-sm font-semibold w-24 shrink-0 ${repoColor[r.repo] ?? 'text-[#F6F7F9]'}`}>{r.repo}</span>
+                        <span class="font-semibold text-[15px] flex-1">{r.name}</span>
+                        <span class="text-xs text-[#F6F7F999] shrink-0">{fmt(r.date)}</span>
+                        <svg class="size-4 shrink-0 text-[#9AA4AE] transition-transform group-open/rel:rotate-180" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg>
+                      </summary>
+                      <div class="px-5 pb-4 pt-1 border-t border-[#2D3843] text-[13px] leading-5 text-[#F6F7F9AA]">
+                        {summary && <p class="mt-3">{summary}</p>}
+                        {highlights.length > 0 && (
+                          <ul class="list-disc pl-5 mt-2 space-y-1">
+                            {highlights.map((h) => <li>{h}</li>)}
+                          </ul>
+                        )}
+                        <a href={r.url} target="_blank" rel="noopener noreferrer" class="inline-block mt-3 text-[#FFA552] font-semibold no-underline hover:underline">Read the release notes →</a>
+                      </div>
+                    </details>
+                  );
+                })}
+              </div>
+            </details>
+          ))}
+        </div>
+      )}
+    </div>
+
+    <!-- footer bits -->
+    <div class="max-w-2xl mx-auto px-5 lg:px-6 text-center mt-16 md:mt-24">
+      <h3 class="font-bold mb-2">Missing something?</h3>
+      <div>
+        Suggest on <a href="https://discord.ethswarm.org/" class="bg-[#2B2B2B] font-semibold text-sm py-2 px-4 rounded-full no-underline leading-[48px]">Discord</a> or propose a <a href="https://github.com/ethersphere/SWIPs" target="_blank" rel="noopener noreferrer" class="bg-[#2B2B2B] font-semibold text-sm py-2 px-4 rounded-full no-underline">SWIP</a>
+      </div>
+      <div class="mt-16 md:mt-24 opacity-80 text-sm md:text-[19px] md:leading-[26px] text-balance">
+        <h4 class="font-bold">Disclaimer:</h4>
+        <div>The themes and timeframes outlined in this roadmap are subject to change.</div>
+      </div>
+    </div>
+  </main>
 </Layout>
